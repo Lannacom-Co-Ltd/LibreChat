@@ -1,0 +1,34 @@
+# LibreChat configuration (git-ignored). Full reference: librechat.example.yaml
+# Docs: https://www.librechat.ai/docs/configuration/librechat_yaml
+version: 1.3.17
+cache: true
+
+# ---------------------------------------------------------------------------
+# Azure AI Foundry — fill in once the Foundry resource and deployments exist,
+# then uncomment. Keys stay in .env (AZURE_FOUNDRY_API_KEY), never in this file.
+# After editing: restart the api container (docker compose restart api).
+# ---------------------------------------------------------------------------
+# endpoints:
+#   azureOpenAI:
+#     titleConvo: true
+#     titleModel: "<deployment used for chat titles, e.g. gpt-mini>"
+#     groups:
+#       # Option A: OpenAI models deployed in Foundry
+#       #   Endpoint looks like https://<resource>.openai.azure.com/
+#       - group: "foundry-openai"
+#         apiKey: "${AZURE_FOUNDRY_API_KEY}"
+#         instanceName: "<resource name>"
+#         version: "<api-version from the Foundry portal>"
+#         models:
+#           <model name shown to users>:
+#             deploymentName: "<deployment name in Foundry>"
+#
+#       # Option B: non-OpenAI models served by Foundry (e.g. DeepSeek, Llama, Mistral)
+#       #   Endpoint looks like https://<resource>.services.ai.azure.com/models
+#       - group: "foundry-models"
+#         apiKey: "${AZURE_FOUNDRY_API_KEY}"
+#         serverless: true
+#         baseURL: "https://<resource>.services.ai.azure.com/models"
+#         version: "<api-version from the Foundry portal>"
+#         models:
+#           <model name>: true
