@@ -18,14 +18,16 @@ services:
       - ./branding/icons/apple-touch-icon-180x180.png:/app/client/dist/assets/apple-touch-icon-180x180.png:ro
       - ./branding/icons/icon-192x192.png:/app/client/dist/assets/icon-192x192.png:ro
       - ./branding/icons/maskable-icon.png:/app/client/dist/assets/maskable-icon.png:ro
-    # Adds the branding stylesheet to index.html, then starts LibreChat as the image normally does.
+    # Adds the branding stylesheet to index.html and sets the initial tab title (APP_TITLE in .env
+    # takes over once the app loads), then starts LibreChat as the image normally does.
     # Bump ?v= after editing branding/space.css so browsers fetch the new version.
     command:
       - sh
       - -c
       - >-
+        sed -i 's#<title>LibreChat</title>#<title>CMUBS AI Hub</title>#' /app/client/dist/index.html;
         grep -q 'assets/custom/space.css' /app/client/dist/index.html ||
-        sed -i 's#</head>#<link rel="stylesheet" href="assets/custom/space.css?v=12" /></head>#' /app/client/dist/index.html;
+        sed -i 's#</head>#<link rel="stylesheet" href="assets/custom/space.css?v=14" /></head>#' /app/client/dist/index.html;
         exec npm run backend
 
   # Expose the containerized MongoDB to this machine only, for MongoDB Compass.

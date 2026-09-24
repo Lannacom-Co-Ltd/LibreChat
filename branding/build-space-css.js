@@ -76,7 +76,7 @@ function wisps({ count, tile, height }) {
 }
 
 const LOGO_VERSION = 1;
-const LOGIN_TITLE = 'Welcome to CMU AI';
+const LOGIN_TITLE = 'Welcome to CMUBS AI Hub';
 const DRIFT_TILE = 700;
 const TWINKLE_A_TILE = 523;
 const TWINKLE_B_TILE = 431;
@@ -215,8 +215,10 @@ ${CARD} > h1 {
 ${CARD} > h1::after {
   content: '${LOGIN_TITLE}';
   display: block;
-  font-size: 1.875rem;
+  font-size: clamp(1.375rem, 6vw, 1.625rem);
   line-height: 2.25rem;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 /* Layered glass card with a purple-to-gold hairline border. */

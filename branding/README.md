@@ -27,8 +27,10 @@ by `docker-compose.override.yml`.
 
 1. Copy `branding/`, `docker-compose.override.yml`, and `librechat.yaml` next to
    `docker-compose.yml`.
-2. `docker compose up -d --force-recreate api`
-3. Open `/login`.
+2. In that deployment's `.env` (never committed), set `APP_TITLE=CMUBS AI Hub` — the
+   system name shown in the browser tab once the app loads.
+3. `docker compose up -d --force-recreate api`
+4. Open `/login`.
 
 ## Change something
 
@@ -36,6 +38,8 @@ by `docker-compose.override.yml`.
 | --- | --- |
 | Emblem | Replace `cmu-logo.png`, run `node branding/build-icons.js`, bump `LOGO_VERSION` in `build-space-css.js` |
 | Login title | Edit `LOGIN_TITLE` in `build-space-css.js` |
+| System name | `APP_TITLE` in `.env`, and the `<title>` replacement in `docker-compose.override.yml` |
+| New-chat greeting | `interface.customWelcome` in `librechat.yaml` (`{{user.name}}` is the signed-in user) |
 | Backdrop | Edit `build-space-css.js` |
 
 Then run `node branding/build-space-css.js`, bump `?v=` in `docker-compose.override.yml`
