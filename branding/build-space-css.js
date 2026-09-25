@@ -75,8 +75,36 @@ function wisps({ count, tile, height }) {
   return join(layers);
 }
 
-const LOGO_VERSION = 1;
-const LOGIN_TITLE = 'Welcome to CMUBS AI Hub';
+const LOGO_VERSION = 2;
+/**
+ * Login heading and tagline per interface language (LibreChat keeps <html lang> in step
+ * with it). Languages not listed show the first entry. The form's own labels, button and
+ * errors come from LibreChat's translations, so they already follow the chosen language.
+ * Proper names (CMUBS AI Hub) stay as they are in every language.
+ */
+const LOGIN_TITLES = [
+  { lang: 'en', text: 'Welcome to CMUBS AI Hub' },
+  /* Thai sets wider than English at the same size, so it gets a smaller type scale. */
+  { lang: 'th', text: 'ยินดีต้อนรับสู่ CMUBS AI Hub', fontSize: 'clamp(1.2rem, 5.2vw, 1.4rem)' },
+];
+/**
+ * Wording tweaks to LibreChat's own translations on the login form, per language. Each
+ * entry replaces the element's text visually (screen readers still read the original).
+ */
+const LOGIN_TEXT_OVERRIDES = [
+  { lang: 'en', selector: "label[for='email']", text: 'Email' },
+  { lang: 'th', selector: "label[for='email']", text: 'อีเมล' },
+];
+const LOGIN_TAGLINES = [
+  {
+    lang: 'en',
+    text: 'The nationally leading business school committed to incubating innovative entrepreneurship, and social responsibility for sustainable development',
+  },
+  {
+    lang: 'th',
+    text: 'สถาบันการศึกษาด้านบริหารธุรกิจชั้นนำของประเทศ ที่มุ่งบ่มเพาะความเป็นผู้ประกอบการเชิงนวัตกรรมและจิตสำนึกต่อสังคม เพื่อการพัฒนาที่ยั่งยืน',
+  },
+];
 const DRIFT_TILE = 700;
 const TWINKLE_A_TILE = 523;
 const TWINKLE_B_TILE = 431;
@@ -131,10 +159,31 @@ const AUTH = 'div:has(> main):has(form[aria-label="Login form"])';
 const LOGO = `${AUTH} div:has(> img[src="assets/logo.svg"])`;
 const CARD = `${AUTH} > main > div`;
 const BUTTON = `${AUTH} [data-testid="login-button"]`;
+const FIELD = `${AUTH} form .webkit-dark-styles`;
 const DARK = `html.dark ${AUTH}`;
 const DARK_LOGO = `html.dark ${LOGO}`;
 const LIGHT = `html:not(.dark) ${AUTH}`;
 const LIGHT_LOGO = `html:not(.dark) ${LOGO}`;
+/** The theme / contrast toggles, bottom left: the only element that carries `absolute bottom-0`. */
+const THEMEBAR = `${AUTH} > div.absolute.bottom-0`;
+const DARK_THEMEBAR = `html.dark ${THEMEBAR}`;
+const LIGHT_THEMEBAR = `html:not(.dark) ${THEMEBAR}`;
+
+/** Per-language `content` (and optional font-size) overrides for a pseudo-element. */
+const localized = (pseudo, entries) =>
+  entries
+    .slice(1)
+    .map(({ lang, text, fontSize }) => {
+      const size = fontSize ? `\n  font-size: ${fontSize};` : '';
+      return `html:lang(${lang}) ${pseudo} {\n  content: '${text}';${size}\n}`;
+    })
+    .join('\n\n');
+
+/** Swaps an element's text for the override at the login form's 14px/20px scale. */
+const textOverrides = LOGIN_TEXT_OVERRIDES.map(({ lang, selector, text }) => {
+  const target = `html:lang(${lang}) ${AUTH} ${selector}`;
+  return `${target} {\n  font-size: 0;\n}\n\n${target}::after {\n  content: '${text}';\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}`;
+}).join('\n\n');
 
 /** A layer anchored to the bottom that scrolls sideways one tile per cycle (seamless). */
 const bottomScroller = ({ tile, height }, viewportShare) => `
@@ -164,7 +213,7 @@ ${AUTH}::after,
 ${AUTH} > main::before,
 ${AUTH} > main::after,
 ${LOGO}::before,
-${LOGO}::after {
+${THEMEBAR}::before {
   content: '';
   position: fixed;
   z-index: -1;
@@ -181,10 +230,14 @@ ${AUTH}::after {
    old logo keeps it. Swapping the image through a versioned URL here takes effect on the
    next page load everywhere the logo appears. Bump LOGO_VERSION after changing the logo. */
 img[src="assets/logo.svg"] {
-  content: url('icons/logo.svg?v=${LOGO_VERSION}');
+  content: url('icons/logo-light.png?v=${LOGO_VERSION}');
 }
 
-/* Larger emblem with a soft halo, taken out of the flow so the card centres on the whole
+html.dark img[src="assets/logo.svg"] {
+  content: url('icons/logo-dark.png?v=${LOGO_VERSION}');
+}
+
+/* Logo with a soft halo, taken out of the flow so the card centres on the whole
    screen instead of on the space below the logo. The filter sits on the image, not the
    wrapper, so the wrapper's fixed-position scene layers stay anchored to the viewport. */
 ${LOGO} {
@@ -192,9 +245,27 @@ ${LOGO} {
   top: 0;
   left: 0;
   right: 0;
-  height: clamp(110px, 17vh, 170px);
+  height: clamp(80px, 13vh, 140px);
   margin-top: clamp(20px, 4vh, 48px);
 }
+
+/* Tagline under the logo, hanging off the absolutely positioned logo wrapper. */
+${LOGO}::after {
+  content: '${LOGIN_TAGLINES[0].text}';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: min(620px, 88vw);
+  margin-top: clamp(8px, 1.4vh, 14px);
+  transform: translateX(-50%);
+  font-size: clamp(0.72rem, 1.05vw, 0.875rem);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+${localized(`${LOGO}::after`, LOGIN_TAGLINES)}
 
 /* The footer (privacy / terms links) likewise floats at the bottom, so it doesn't push the
    card off-centre either. */
@@ -213,12 +284,54 @@ ${CARD} > h1 {
 }
 
 ${CARD} > h1::after {
-  content: '${LOGIN_TITLE}';
+  content: '${LOGIN_TITLES[0].text}';
   display: block;
   font-size: clamp(1.375rem, 6vw, 1.625rem);
   line-height: 2.25rem;
   letter-spacing: -0.01em;
   white-space: nowrap;
+}
+
+${localized(`${CARD} > h1::after`, LOGIN_TITLES)}
+
+${textOverrides}
+
+/* Glass fields. LibreChat paints them with a hard-coded inset colour (.webkit-dark-styles
+   in client/src/style.css) and gives the floating label a solid background, both of which
+   read as opaque boxes on the glass card. Here the fill is translucent and the floated
+   label rests inside the field's top edge rather than on its border, so it needs no
+   background. Autofill keeps an opaque tint because Chrome paints its own over it. */
+${FIELD},
+${FIELD}:focus {
+  background: var(--field-bg);
+  background-clip: padding-box;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  -webkit-text-fill-color: var(--field-text);
+  padding-top: 1.45rem;
+  padding-bottom: 0.4rem;
+}
+
+${FIELD}:-webkit-autofill,
+${FIELD}:-webkit-autofill:hover,
+${FIELD}:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 50vh var(--field-autofill) inset;
+  -webkit-text-fill-color: var(--field-text);
+}
+
+${AUTH} form label {
+  background: transparent;
+}
+
+/* [for][class] lifts specificity above Tailwind's peer-focus:top-1.5 / -translate-y-4. */
+${AUTH} form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class] {
+  top: 0.3rem;
+  --tw-translate-y: 0px;
+}
+
+${AUTH} form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class],
+${AUTH} form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class]::after {
+  line-height: 1rem;
 }
 
 /* Layered glass card with a purple-to-gold hairline border. */
@@ -330,7 +443,7 @@ ${DARK} > main::after {
 }
 
 /* A faint, rare shooting star. */
-${DARK_LOGO}::after {
+${DARK_THEMEBAR}::before {
   top: 16%;
   left: 70%;
   width: 180px;
@@ -341,17 +454,20 @@ ${DARK_LOGO}::after {
   animation: lux-meteor 14s ease-in 4s infinite;
 }
 
+${DARK_LOGO}::after {
+  /* Same colour as the "Chiang Mai University Business School" line in logo-dark.png. */
+  color: #e4e2ec;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
+}
+
 ${DARK_LOGO} img {
   filter: drop-shadow(0 0 28px rgba(170, 120, 255, 0.35)) drop-shadow(0 10px 24px rgba(0, 0, 0, 0.7));
 }
 
-/* Light theme paints inputs with a hard-coded white inset shadow (.webkit-dark-styles in
-   client/src/style.css); on black, mirror its .dark variant. */
-${DARK} .webkit-dark-styles,
-${DARK} .webkit-dark-styles:focus {
-  -webkit-text-fill-color: #fff;
-  background-clip: content-box;
-  -webkit-box-shadow: 0 0 0 50vh #0b0a10 inset;
+${DARK} {
+  --field-bg: rgba(255, 255, 255, 0.045);
+  --field-autofill: #17151f;
+  --field-text: #ffffff;
 }
 
 ${DARK} > main > div {
@@ -369,6 +485,9 @@ ${DARK} > main > div {
 ${LIGHT} {
   --sun-x: 76vw;
   --sun-y: 57vh;
+  --field-bg: rgba(255, 255, 255, 0.5);
+  --field-autofill: #f3f0f8;
+  --field-text: rgb(var(--text-primary));
   --accent-primary: 111 60 170;
   --accent-primary-hover: 91 44 131;
   color-scheme: light;
@@ -439,8 +558,14 @@ ${LIGHT_LOGO}::before {
   will-change: transform;
 }
 
-${LIGHT_LOGO}::after {
+${LIGHT_THEMEBAR}::before {
   display: none;
+}
+
+${LIGHT_LOGO}::after {
+  /* Same colour as the "Chiang Mai University Business School" line in the logo. */
+  color: #404042;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.7);
 }
 
 ${LIGHT_LOGO} img {
@@ -519,7 +644,7 @@ ${LIGHT} > main > div {
   ${LOGO}::before {
     animation: none;
   }
-  ${LOGO}::after {
+  ${THEMEBAR}::before {
     display: none;
   }
   ${BUTTON},
@@ -530,5 +655,82 @@ ${LIGHT} > main > div {
 }
 `;
 
-fs.writeFileSync(path.join(__dirname, 'space.css'), css);
-console.log(`space.css written (${css.length} bytes)`);
+/* ============================ New-chat greeting ============================ */
+
+/**
+ * Greetings above the new-chat composer, one picked at random on each page load by
+ * greeting.js (which sets <html data-greeting>). librechat.yaml's customWelcome renders
+ * just the user's name, and these rules wrap it as [before] + name + [after]. The first
+ * entry is the default when the script doesn't run. Keep each line under ~45 characters
+ * plus the name so LibreChat keeps its large greeting size. Use ’ rather than '.
+ */
+const GREETINGS = [
+  { en: ['How can I help you today, ', '?'], th: ['วันนี้ให้ช่วยอะไรดี ', ''] },
+  { en: ['Good to see you, ', ''], th: ['ยินดีที่ได้พบคุณ ', ''] },
+  { en: ['What shall we work on, ', '?'], th: ['วันนี้จะทำอะไรกันดี ', ''] },
+  { en: ['Ready to learn something new, ', '?'], th: ['พร้อมเรียนรู้สิ่งใหม่หรือยัง ', ''] },
+  { en: ['What’s on your mind, ', '?'], th: ['มีอะไรอยากให้ช่วยไหม ', ''] },
+  { en: ['Let’s turn ideas into impact, ', ''], th: ['มาเปลี่ยนไอเดียให้เป็นผลลัพธ์กัน ', ''] },
+  { en: ['Where shall we start today, ', '?'], th: ['วันนี้เริ่มจากตรงไหนดี ', ''] },
+  { en: ['Let’s build something great, ', ''], th: ['มาสร้างสิ่งดีๆ ด้วยกัน ', ''] },
+];
+
+/* The greeting's <p> sits beside the conversation icon (div.size-10); an agent's name sits
+   one level deeper, so it is left alone, as is the temporary-chat greeting. */
+const GREETING = 'div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent';
+
+const greetingRules = (scope, [before, after]) =>
+  `${scope} ${GREETING}::before {\n  content: "${before}";\n}\n\n${scope} ${GREETING}::after {\n  content: "${after}";\n}`;
+
+const greetingCss = `
+${GREETING}::before,
+${GREETING}::after {
+  animation: greeting-in 0.6s ease-out both;
+}
+
+${greetingRules('html', GREETINGS[0].en)}
+
+${greetingRules('html:lang(th)', GREETINGS[0].th)}
+
+${GREETINGS.slice(1)
+  .map((g, i) =>
+    [greetingRules(`html[data-greeting='${i + 1}']`, g.en), greetingRules(`html[data-greeting='${i + 1}']:lang(th)`, g.th)].join('\n\n'),
+  )
+  .join('\n\n')}
+
+@keyframes greeting-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ${GREETING}::before,
+  ${GREETING}::after {
+    animation: none;
+  }
+}
+`;
+
+const greetingJs = `/* Generated by branding/build-space-css.js — edit that file, not this one.
+ * Picks one of the ${GREETINGS.length} new-chat greetings for this page load, never the same one twice in a
+ * row, and exposes it as <html data-greeting> for space.css. */
+(function () {
+  var COUNT = ${GREETINGS.length};
+  var KEY = 'cmubs-greeting';
+  var pick = Math.floor(Math.random() * COUNT);
+  try {
+    var last = sessionStorage.getItem(KEY);
+    if (COUNT > 1 && String(pick) === last) {
+      pick = (pick + 1 + Math.floor(Math.random() * (COUNT - 1))) % COUNT;
+    }
+    sessionStorage.setItem(KEY, String(pick));
+  } catch (e) {
+    /* Storage blocked: a plain random pick is fine. */
+  }
+  document.documentElement.setAttribute('data-greeting', String(pick));
+})();
+`;
+
+fs.writeFileSync(path.join(__dirname, 'space.css'), css + greetingCss);
+fs.writeFileSync(path.join(__dirname, 'greeting.js'), greetingJs);
+console.log(`space.css written (${(css + greetingCss).length} bytes), greeting.js written (${GREETINGS.length} greetings)`);

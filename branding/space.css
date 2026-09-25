@@ -15,7 +15,7 @@ div:has(> main):has(form[aria-label="Login form"])::after,
 div:has(> main):has(form[aria-label="Login form"]) > main::before,
 div:has(> main):has(form[aria-label="Login form"]) > main::after,
 div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::before,
-div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::before {
   content: '';
   position: fixed;
   z-index: -1;
@@ -32,10 +32,14 @@ div:has(> main):has(form[aria-label="Login form"])::after {
    old logo keeps it. Swapping the image through a versioned URL here takes effect on the
    next page load everywhere the logo appears. Bump LOGO_VERSION after changing the logo. */
 img[src="assets/logo.svg"] {
-  content: url('icons/logo.svg?v=1');
+  content: url('icons/logo-light.png?v=2');
 }
 
-/* Larger emblem with a soft halo, taken out of the flow so the card centres on the whole
+html.dark img[src="assets/logo.svg"] {
+  content: url('icons/logo-dark.png?v=2');
+}
+
+/* Logo with a soft halo, taken out of the flow so the card centres on the whole
    screen instead of on the space below the logo. The filter sits on the image, not the
    wrapper, so the wrapper's fixed-position scene layers stay anchored to the viewport. */
 div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) {
@@ -43,8 +47,28 @@ div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/log
   top: 0;
   left: 0;
   right: 0;
-  height: clamp(110px, 17vh, 170px);
+  height: clamp(80px, 13vh, 140px);
   margin-top: clamp(20px, 4vh, 48px);
+}
+
+/* Tagline under the logo, hanging off the absolutely positioned logo wrapper. */
+div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+  content: 'The nationally leading business school committed to incubating innovative entrepreneurship, and social responsibility for sustainable development';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: min(620px, 88vw);
+  margin-top: clamp(8px, 1.4vh, 14px);
+  transform: translateX(-50%);
+  font-size: clamp(0.72rem, 1.05vw, 0.875rem);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+html:lang(th) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+  content: 'สถาบันการศึกษาด้านบริหารธุรกิจชั้นนำของประเทศ ที่มุ่งบ่มเพาะความเป็นผู้ประกอบการเชิงนวัตกรรมและจิตสำนึกต่อสังคม เพื่อการพัฒนาที่ยั่งยืน';
 }
 
 /* The footer (privacy / terms links) likewise floats at the bottom, so it doesn't push the
@@ -70,6 +94,69 @@ div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
   line-height: 2.25rem;
   letter-spacing: -0.01em;
   white-space: nowrap;
+}
+
+html:lang(th) div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
+  content: 'ยินดีต้อนรับสู่ CMUBS AI Hub';
+  font-size: clamp(1.2rem, 5.2vw, 1.4rem);
+}
+
+html:lang(en) div:has(> main):has(form[aria-label="Login form"]) label[for='email'] {
+  font-size: 0;
+}
+
+html:lang(en) div:has(> main):has(form[aria-label="Login form"]) label[for='email']::after {
+  content: 'Email';
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+html:lang(th) div:has(> main):has(form[aria-label="Login form"]) label[for='email'] {
+  font-size: 0;
+}
+
+html:lang(th) div:has(> main):has(form[aria-label="Login form"]) label[for='email']::after {
+  content: 'อีเมล';
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+/* Glass fields. LibreChat paints them with a hard-coded inset colour (.webkit-dark-styles
+   in client/src/style.css) and gives the floating label a solid background, both of which
+   read as opaque boxes on the glass card. Here the fill is translucent and the floated
+   label rests inside the field's top edge rather than on its border, so it needs no
+   background. Autofill keeps an opaque tint because Chrome paints its own over it. */
+div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles,
+div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:focus {
+  background: var(--field-bg);
+  background-clip: padding-box;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  -webkit-text-fill-color: var(--field-text);
+  padding-top: 1.45rem;
+  padding-bottom: 0.4rem;
+}
+
+div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:-webkit-autofill,
+div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:-webkit-autofill:hover,
+div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 50vh var(--field-autofill) inset;
+  -webkit-text-fill-color: var(--field-text);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) form label {
+  background: transparent;
+}
+
+/* [for][class] lifts specificity above Tailwind's peer-focus:top-1.5 / -translate-y-4. */
+div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class] {
+  top: 0.3rem;
+  --tw-translate-y: 0px;
+}
+
+div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class],
+div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class]::after {
+  line-height: 1rem;
 }
 
 /* Layered glass card with a purple-to-gold hairline border. */
@@ -274,7 +361,7 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) > main::after {
 }
 
 /* A faint, rare shooting star. */
-html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+html.dark div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::before {
   top: 16%;
   left: 70%;
   width: 180px;
@@ -285,17 +372,20 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="
   animation: lux-meteor 14s ease-in 4s infinite;
 }
 
+html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+  /* Same colour as the "Chiang Mai University Business School" line in logo-dark.png. */
+  color: #e4e2ec;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
+}
+
 html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) img {
   filter: drop-shadow(0 0 28px rgba(170, 120, 255, 0.35)) drop-shadow(0 10px 24px rgba(0, 0, 0, 0.7));
 }
 
-/* Light theme paints inputs with a hard-coded white inset shadow (.webkit-dark-styles in
-   client/src/style.css); on black, mirror its .dark variant. */
-html.dark div:has(> main):has(form[aria-label="Login form"]) .webkit-dark-styles,
-html.dark div:has(> main):has(form[aria-label="Login form"]) .webkit-dark-styles:focus {
-  -webkit-text-fill-color: #fff;
-  background-clip: content-box;
-  -webkit-box-shadow: 0 0 0 50vh #0b0a10 inset;
+html.dark div:has(> main):has(form[aria-label="Login form"]) {
+  --field-bg: rgba(255, 255, 255, 0.045);
+  --field-autofill: #17151f;
+  --field-text: #ffffff;
 }
 
 html.dark div:has(> main):has(form[aria-label="Login form"]) > main > div {
@@ -313,6 +403,9 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) > main > div {
 html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) {
   --sun-x: 76vw;
   --sun-y: 57vh;
+  --field-bg: rgba(255, 255, 255, 0.5);
+  --field-autofill: #f3f0f8;
+  --field-text: rgb(var(--text-primary));
   --accent-primary: 111 60 170;
   --accent-primary-hover: 91 44 131;
   color-scheme: light;
@@ -505,8 +598,14 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) div:has(> img
   will-change: transform;
 }
 
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::before {
   display: none;
+}
+
+html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+  /* Same colour as the "Chiang Mai University Business School" line in the logo. */
+  color: #404042;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.7);
 }
 
 html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) img {
@@ -585,12 +684,157 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > main > div 
   div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::before {
     animation: none;
   }
-  div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+  div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::before {
     display: none;
   }
   div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"],
   div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"]:hover {
     transition: none;
     transform: none;
+  }
+}
+
+div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before,
+div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  animation: greeting-in 0.6s ease-out both;
+}
+
+html div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "How can I help you today, ";
+}
+
+html div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "?";
+}
+
+html:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "วันนี้ให้ช่วยอะไรดี ";
+}
+
+html:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='1'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "Good to see you, ";
+}
+
+html[data-greeting='1'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='1']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "ยินดีที่ได้พบคุณ ";
+}
+
+html[data-greeting='1']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='2'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "What shall we work on, ";
+}
+
+html[data-greeting='2'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "?";
+}
+
+html[data-greeting='2']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "วันนี้จะทำอะไรกันดี ";
+}
+
+html[data-greeting='2']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='3'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "Ready to learn something new, ";
+}
+
+html[data-greeting='3'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "?";
+}
+
+html[data-greeting='3']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "พร้อมเรียนรู้สิ่งใหม่หรือยัง ";
+}
+
+html[data-greeting='3']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='4'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "What’s on your mind, ";
+}
+
+html[data-greeting='4'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "?";
+}
+
+html[data-greeting='4']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "มีอะไรอยากให้ช่วยไหม ";
+}
+
+html[data-greeting='4']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='5'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "Let’s turn ideas into impact, ";
+}
+
+html[data-greeting='5'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='5']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "มาเปลี่ยนไอเดียให้เป็นผลลัพธ์กัน ";
+}
+
+html[data-greeting='5']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='6'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "Where shall we start today, ";
+}
+
+html[data-greeting='6'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "?";
+}
+
+html[data-greeting='6']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "วันนี้เริ่มจากตรงไหนดี ";
+}
+
+html[data-greeting='6']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='7'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "Let’s build something great, ";
+}
+
+html[data-greeting='7'] div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+html[data-greeting='7']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before {
+  content: "มาสร้างสิ่งดีๆ ด้วยกัน ";
+}
+
+html[data-greeting='7']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+  content: "";
+}
+
+@keyframes greeting-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::before,
+  div:has(> div.size-10):not(:has(.lucide-hat-glasses)) > p.split-parent::after {
+    animation: none;
   }
 }

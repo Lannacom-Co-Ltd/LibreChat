@@ -11,24 +11,51 @@ services:
         source: ./branding
         target: /app/client/dist/assets/custom
         read_only: true
-      # CMU emblem in place of the LibreChat logo and icons (built by branding/build-icons.js).
+      # CMUBS logo and round icons in place of LibreChat's (built by branding/build-icons.js).
       - ./branding/icons/logo.svg:/app/client/dist/assets/logo.svg:ro
       - ./branding/icons/favicon-16x16.png:/app/client/dist/assets/favicon-16x16.png:ro
       - ./branding/icons/favicon-32x32.png:/app/client/dist/assets/favicon-32x32.png:ro
       - ./branding/icons/apple-touch-icon-180x180.png:/app/client/dist/assets/apple-touch-icon-180x180.png:ro
       - ./branding/icons/icon-192x192.png:/app/client/dist/assets/icon-192x192.png:ro
       - ./branding/icons/maskable-icon.png:/app/client/dist/assets/maskable-icon.png:ro
-    # Adds the branding stylesheet to index.html and sets the initial tab title (APP_TITLE in .env
-    # takes over once the app loads), then starts LibreChat as the image normally does.
-    # Bump ?v= after editing branding/space.css so browsers fetch the new version.
+    # Adds the branding stylesheet, the English-by-default script (branding/lang.js) and the
+    # random new-chat greeting picker (branding/greeting.js) to index.html, sets the initial
+    # tab title (APP_TITLE in .env takes over once the app loads) and versions the favicon
+    # links, then starts LibreChat as the image normally does. Bump ?v= after editing
+    # branding/space.css (or the favicons) so browsers and LibreChat's service worker fetch
+    # the new files.
     command:
       - sh
       - -c
       - >-
         sed -i 's#<title>LibreChat</title>#<title>CMUBS AI Hub</title>#' /app/client/dist/index.html;
+        sed -i 's#href="assets/favicon-\([0-9x]*\)\.png"#href="assets/favicon-\1.png?v=3"#g' /app/client/dist/index.html;
+        grep -q 'assets/custom/lang.js' /app/client/dist/index.html ||
+        sed -i 's#</head>#<script src="assets/custom/lang.js?v=1"></script></head>#' /app/client/dist/index.html;
+        grep -q 'assets/custom/greeting.js' /app/client/dist/index.html ||
+        sed -i 's#</head>#<script src="assets/custom/greeting.js?v=1"></script></head>#' /app/client/dist/index.html;
         grep -q 'assets/custom/space.css' /app/client/dist/index.html ||
-        sed -i 's#</head>#<link rel="stylesheet" href="assets/custom/space.css?v=14" /></head>#' /app/client/dist/index.html;
+        sed -i 's#</head>#<link rel="stylesheet" href="assets/custom/space.css?v=27" /></head>#' /app/client/dist/index.html;
         exec npm run backend
+
+  # Admin panel (port 3000): CMUBS name and icon. The name lives in the panel's compiled
+  # bundles, so it is rewritten at container start; the image itself is unchanged.
+  admin-panel:
+    volumes:
+      - ./branding/icons/favicon.ico:/app/dist/client/favicon.ico:ro
+      - ./branding/admin/manifest.json:/app/dist/client/manifest.json:ro
+    command:
+      - sh
+      - -c
+      - >-
+        sed -i
+        -e 's/LibreChat Admin Panel/CMUBS AI Hub Admin/g'
+        -e 's/com_auth_title:`Admin Panel`/com_auth_title:`CMUBS AI Hub Admin`/g'
+        -e 's/manage your LibreChat instance/manage CMUBS AI Hub/g'
+        -e 's/permissions for LibreChat`/permissions for CMUBS AI Hub`/g'
+        -e 's/the most out of LibreChat/the most out of CMUBS AI Hub/g'
+        dist/client/assets/*.js dist/server/assets/*.js;
+        exec bun run start
 
   # Expose the containerized MongoDB to this machine only, for MongoDB Compass.
   # Host port 27018 so it can't clash with a MongoDB installed directly on the host.

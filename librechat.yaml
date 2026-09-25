@@ -4,8 +4,10 @@ version: 1.3.17
 cache: true
 
 interface:
-  # Greeting on a new chat. {{user.name}} is replaced with the signed-in user's name.
-  customWelcome: 'How can I help you today, {{user.name}}?'
+  # Greeting on a new chat: just the signed-in user's name. branding/space.css wraps it in a
+  # sentence picked at random per page load (English or Thai, per the user's language);
+  # the sentences live in GREETINGS in branding/build-space-css.js.
+  customWelcome: '{{user.name}}'
 
 # ---------------------------------------------------------------------------
 # Azure AI Foundry — fill in once the Foundry resource and deployments exist,
