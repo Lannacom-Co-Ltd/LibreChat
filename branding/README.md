@@ -1,7 +1,8 @@
 # CMUBS AI Hub branding
 
-Custom look for a Docker deployment of LibreChat — CMUBS logo and tagline, login title, and an
-animated login backdrop (deep space in dark mode, a sky above the clouds in light mode).
+Custom look for a Docker deployment of LibreChat — CMUBS logo and tagline, login title, and a
+campus skyline backdrop on the login page (white line art on navy in dark mode, teal on light
+grey in light mode).
 No LibreChat source file or image is modified: everything is layered on at container start
 by `docker-compose.override.yml`.
 
@@ -12,7 +13,7 @@ by `docker-compose.override.yml`.
 | Logo and icons | Bind-mounted over the files in `/app/client/dist/assets/` |
 | Login backdrop, title, card, button | `space.css`, linked into `index.html` by the api container's start command |
 | Scope | CSS `:has(form[aria-label="Login form"])`, or the SSO buttons when there is no form — only the login page changes |
-| Theme | `html.dark` → space, otherwise → sky |
+| Theme | `html.dark` → `backdrops/dark.jpg`, otherwise → `backdrops/light.jpg` |
 | Language | `lang.js` makes English the default for anyone who hasn't picked one in Settings; the login form follows the chosen language |
 
 ## Files
@@ -21,7 +22,8 @@ by `docker-compose.override.yml`.
 | --- | --- |
 | `cmubs-logo.png` | Source logo (a 1024px+ PNG or an SVG gives sharper results) |
 | `build-icons.js` | Builds `icons/`: light and dark logos, and round favicons / app icons from the dot mark |
-| `build-space-css.js` | Builds `space.css`; login title, colours, and animation live here |
+| `backdrops/dark.jpg`, `backdrops/light.jpg` | Login backdrops (2000×1125; plain sky on top, skyline along the bottom) |
+| `build-space-css.js` | Builds `space.css`; login title, colours, and backdrop placement live here |
 | `space.css`, `icons/` | Generated — do not edit by hand |
 
 ## Apply to a deployment
@@ -44,7 +46,7 @@ by `docker-compose.override.yml`.
 | SSO-only login (no email/password form) | `ALLOW_EMAIL_LOGIN=false` in `.env`; the SSO button then takes the primary purple style. Local accounts can no longer sign in through the UI — give an SSO account the ADMIN role first |
 | SSO button text | `OPENID_BUTTON_LABEL=Continue with CMU IT Account` in `.env` (one label for every language) |
 | Admin panel name | the `sed` lines under `admin-panel` in `docker-compose.override.yml`; icon is `icons/favicon.ico` |
-| Backdrop | Edit `build-space-css.js` |
+| Backdrop | Replace the image in `backdrops/`, update its `sky` colour in `BACKDROPS` in `build-space-css.js` if it changed, and bump `BACKDROP_VERSION` |
 
 Then run `node branding/build-space-css.js`, bump `?v=` in `docker-compose.override.yml`
 (browsers cache static files for two days), and recreate the api container.
