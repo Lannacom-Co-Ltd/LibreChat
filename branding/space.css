@@ -10,7 +10,7 @@
    block keeps its height and pushes the card down just enough instead of overlapping it,
    and the toggles in the bottom corner can never sit on top of the card. When everything is
    taller than the screen, the page scrolls. */
-div:has(> main):has(form[aria-label="Login form"]) {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
   --cmu-purple: #5b2c83;
   --cmu-purple-light: #8a55c9;
   --cmu-gold: #c9a45c;
@@ -28,26 +28,26 @@ div:has(> main):has(form[aria-label="Login form"]) {
   min-height: 100svh;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > div:has(img[src="assets/logo.svg"]) {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div:has(img[src="assets/logo.svg"]) {
   order: 1;
   flex: 1 1 0;
   justify-content: flex-start;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > div.mx-auto {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div.mx-auto {
   order: 2;
   flex: 0 0 auto;
   margin-bottom: 12px;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main {
   order: 3;
   flex: 0 0 auto;
 }
 
 /* The theme / contrast toggles become the growing bottom block, pinned to its bottom-left.
    In LibreChat's markup they come before the card, so 'order' moves them to the end. */
-div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0 {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div.absolute.bottom-0 {
   order: 4;
   position: static;
   flex: 1 1 0;
@@ -60,7 +60,7 @@ div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0 {
 }
 
 @media (max-height: 760px) {
-  div:has(> main):has(form[aria-label="Login form"]) {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
     --logo-h: clamp(56px, 10vh, 84px);
     --stack-gap: clamp(16px, 3vh, 28px);
     --page-pad-y: clamp(16px, 3vh, 28px);
@@ -68,18 +68,18 @@ div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0 {
 }
 
 @media (max-height: 620px) {
-  div:has(> main):has(form[aria-label="Login form"]) {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
     --logo-h: 52px;
     --stack-gap: 12px;
   }
 }
 
-div:has(> main):has(form[aria-label="Login form"])::before,
-div:has(> main):has(form[aria-label="Login form"])::after,
-div:has(> main):has(form[aria-label="Login form"]) > main::before,
-div:has(> main):has(form[aria-label="Login form"]) > main::after,
-div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::before,
-div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::before {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::before,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::after,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main::before,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main::after,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::before,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div.absolute.bottom-0::before {
   content: '';
   position: fixed;
   z-index: -1;
@@ -87,8 +87,8 @@ div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::befo
 }
 
 /* Backmost layers (star dust / sun and rays) sit behind the horizon and clouds. */
-div:has(> main):has(form[aria-label="Login form"])::before,
-div:has(> main):has(form[aria-label="Login form"])::after {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::before,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::after {
   z-index: -2;
 }
 
@@ -106,7 +106,7 @@ html.dark img[src="assets/logo.svg"] {
 /* Logo with a soft halo, then the tagline, stacked above the card. The filter sits on the
    image, not the wrapper, so the wrapper's fixed-position scene layers stay anchored to
    the viewport. */
-div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"]) {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -114,14 +114,14 @@ div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/log
   margin: 0 0 var(--stack-gap);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) img {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"]) img {
   height: var(--logo-h);
   width: auto;
   max-width: 88vw;
   object-fit: contain;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::after {
   content: 'The nationally leading business school committed to incubating innovative entrepreneurship, and social responsibility for sustainable development';
   display: block;
   width: min(620px, 100%);
@@ -133,19 +133,19 @@ div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/log
   text-wrap: balance;
 }
 
-html:lang(th) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+html:lang(th) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::after {
   content: 'สถาบันการศึกษาด้านบริหารธุรกิจชั้นนำของประเทศ ที่มุ่งบ่มเพาะความเป็นผู้ประกอบการเชิงนวัตกรรมและจิตสำนึกต่อสังคม เพื่อการพัฒนาที่ยั่งยืน';
 }
 
 @media (max-height: 620px) {
-  div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::after {
     font-size: 0.7rem;
     line-height: 1.4;
   }
 }
 
 /* The footer (privacy / terms links) floats at the bottom rather than joining the stack. */
-div:has(> main):has(form[aria-label="Login form"]) > [role='contentinfo'] {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > [role='contentinfo'] {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -156,7 +156,7 @@ div:has(> main):has(form[aria-label="Login form"]) > [role='contentinfo'] {
    bottom padding, a 40px gap under the title, 48px of stacked margins under "OR"). One
    rhythm here, tightened further on short screens so the card with SSO buttons still
    fits without scrolling down to 560px of height. */
-div:has(> main):has(form[aria-label="Login form"]) > main > div {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
   --card-pad-y: clamp(20px, 3vh, 28px);
   --card-pad-x: clamp(18px, 5vw, 28px);
   --card-gap: clamp(14px, 2vh, 20px);
@@ -166,56 +166,93 @@ div:has(> main):has(form[aria-label="Login form"]) > main > div {
   padding: var(--card-pad-y) var(--card-pad-x);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div > h1 {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1 {
   margin-bottom: 0;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div > form {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > form {
   margin-top: var(--card-gap);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div > form > div:first-child {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > form > div:first-child {
   margin-bottom: var(--field-gap);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div > form > div:has(> [data-testid='login-button']) {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > form > div:has(> [data-testid='login-button']) {
   margin-top: var(--card-gap);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"] {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"] {
   height: var(--button-h);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) {
   margin-top: var(--card-gap);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) + div {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) + div {
   margin-top: var(--card-gap);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) + div + div,
-div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) + div + div > div:first-child {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) + div + div,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) + div + div > div:first-child {
   margin-top: 0;
+}
+
+/* SSO-only login (ALLOW_EMAIL_LOGIN=false): the buttons follow the title directly. */
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(.border-t > .absolute)) > h1 ~ div.mt-2:has(a[href*='/oauth/']) {
+  margin-top: var(--card-gap);
+}
+
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(.border-t > .absolute)) > h1 ~ div.mt-2:has(a[href*='/oauth/']) > div:first-child {
+  margin-top: 0;
+}
+
+/* With no email form, the SSO button is the only way in, so it takes the primary look. */
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(form)) a[href*='/oauth/'] {
+  justify-content: center;
+  min-height: var(--button-h);
+  border: 0;
+  color: #fff;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--cmu-purple-light) 0%, var(--cmu-purple) 55%, #43206a 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 28px -10px rgba(91, 44, 131, 0.75);
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(form)) a[href*='/oauth/']:hover {
+  background: linear-gradient(135deg, var(--cmu-purple-light) 0%, var(--cmu-purple) 55%, #43206a 100%);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(form)) a[href*='/oauth/'],
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(form)) a[href*='/oauth/']:hover {
+    transition: none;
+    transform: none;
+  }
 }
 
 
 /* Phones (portrait): a narrower, lighter card with room around it, so the logo, tagline
    and card read as three calm blocks rather than one crowded column. */
 @media (max-width: 480px) {
-  div:has(> main):has(form[aria-label="Login form"]) {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
     --logo-h: clamp(60px, 9vh, 88px);
     --stack-gap: clamp(22px, 4.5vh, 40px);
     padding-left: 24px;
     padding-right: 24px;
   }
 
-  div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::after {
     width: min(320px, 100%);
     font-size: 0.75rem;
   }
 
-  div:has(> main):has(form[aria-label="Login form"]) > main > div {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
     --card-pad-y: 20px;
     --card-pad-x: 20px;
     --card-gap: 14px;
@@ -225,22 +262,22 @@ div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> 
     border-radius: 18px;
   }
 
-  div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1::after {
     font-size: 1.3rem;
     line-height: 1.9rem;
   }
 
-  html:lang(th) div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
+  html:lang(th) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1::after {
     font-size: 1.15rem;
   }
 
-  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles,
-  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:focus {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles,
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles:focus {
     padding-top: 1.3rem;
     padding-bottom: 0.3rem;
   }
 
-  div:has(> main):has(form[aria-label="Login form"]) > main > div a[href*='/oauth/'] {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div a[href*='/oauth/'] {
     padding-top: 0.65rem;
     padding-bottom: 0.65rem;
   }
@@ -248,7 +285,7 @@ div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> 
 
 /* Short screens (including short phones): tighter card spacing. */
 @media (max-height: 700px) {
-  div:has(> main):has(form[aria-label="Login form"]) > main > div {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
     --card-pad-y: 16px;
     --card-pad-x: 22px;
     --card-gap: 12px;
@@ -256,13 +293,13 @@ div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> 
     --button-h: 44px;
   }
 
-  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles,
-  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:focus {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles,
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles:focus {
     padding-top: 1.3rem;
     padding-bottom: 0.3rem;
   }
 
-  div:has(> main):has(form[aria-label="Login form"]) > main > div a[href*='/oauth/'] {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div a[href*='/oauth/'] {
     padding-top: 0.6rem;
     padding-bottom: 0.6rem;
   }
@@ -270,24 +307,24 @@ div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> 
 
 /* Landscape phones and very short windows: drop the tagline, keep the logo small. */
 @media (max-height: 520px) {
-  div:has(> main):has(form[aria-label="Login form"]) {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
     --logo-h: 40px;
     --stack-gap: 16px;
   }
 
-  div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::after {
     display: none;
   }
 }
 
 /* Custom heading. LibreChat has no setting for the login title, so the original text is
    collapsed and replaced visually (screen readers still announce the original). */
-div:has(> main):has(form[aria-label="Login form"]) > main > div > h1 {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1 {
   font-size: 0;
   line-height: 0;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1::after {
   content: 'Welcome to CMUBS AI Hub';
   display: block;
   font-size: clamp(1.375rem, 6vw, 1.625rem);
@@ -296,26 +333,26 @@ div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
   white-space: nowrap;
 }
 
-html:lang(th) div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
+html:lang(th) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1::after {
   content: 'ยินดีต้อนรับสู่ CMUBS AI Hub';
   font-size: clamp(1.2rem, 5.2vw, 1.4rem);
 }
 
-html:lang(en) div:has(> main):has(form[aria-label="Login form"]) label[for='email'] {
+html:lang(en) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) label[for='email'] {
   font-size: 0;
 }
 
-html:lang(en) div:has(> main):has(form[aria-label="Login form"]) label[for='email']::after {
+html:lang(en) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) label[for='email']::after {
   content: 'Email';
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
 
-html:lang(th) div:has(> main):has(form[aria-label="Login form"]) label[for='email'] {
+html:lang(th) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) label[for='email'] {
   font-size: 0;
 }
 
-html:lang(th) div:has(> main):has(form[aria-label="Login form"]) label[for='email']::after {
+html:lang(th) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) label[for='email']::after {
   content: 'อีเมล';
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -326,8 +363,8 @@ html:lang(th) div:has(> main):has(form[aria-label="Login form"]) label[for='emai
    read as opaque boxes on the glass card. Here the fill is translucent and the floated
    label rests inside the field's top edge rather than on its border, so it needs no
    background. Autofill keeps an opaque tint because Chrome paints its own over it. */
-div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles,
-div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:focus {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles:focus {
   background: var(--field-bg);
   background-clip: padding-box;
   -webkit-box-shadow: none;
@@ -340,70 +377,70 @@ div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:focu
 /* iOS Safari zooms the page in when a field under 16px gets focus, and leaves it zoomed.
    16px on touch devices stops that without disabling pinch-zoom for people who need it. */
 @media (hover: none) and (pointer: coarse) {
-  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles,
-  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:focus {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles,
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles:focus {
     font-size: 16px;
   }
 }
 
-div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:-webkit-autofill,
-div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:-webkit-autofill:hover,
-div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:-webkit-autofill:focus {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles:-webkit-autofill,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles:-webkit-autofill:hover,
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form .webkit-dark-styles:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 50vh var(--field-autofill) inset;
   -webkit-text-fill-color: var(--field-text);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) form label {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form label {
   background: transparent;
 }
 
 /* [for][class] lifts specificity above Tailwind's peer-focus:top-1.5 / -translate-y-4. */
-div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class] {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class] {
   top: 0.3rem;
   --tw-translate-y: 0px;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class],
-div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class]::after {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class],
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class]::after {
   line-height: 1rem;
 }
 
 /* "OR" divider above the SSO buttons: LibreChat draws a full border and masks it with a
    solid label background, which shows as a dark chip on the glass. Instead the line fades
    in from the edges and leaves a gap for the label. */
-div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) {
   border: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent 0%, rgb(var(--border-medium)) 22%, rgb(var(--border-medium)) 40%, transparent 40%, transparent 60%, rgb(var(--border-medium)) 60%, rgb(var(--border-medium)) 78%, transparent 100%);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) > .absolute {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) > .absolute {
   background: transparent;
   color: rgb(var(--text-secondary));
   letter-spacing: 0.08em;
 }
 
 /* SSO buttons (Continue with OpenID, etc.) match the glass fields. */
-div:has(> main):has(form[aria-label="Login form"]) > main > div a[href*='/oauth/'] {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div a[href*='/oauth/'] {
   background: var(--field-bg);
   border-color: rgb(var(--border-light));
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) > main > div a[href*='/oauth/']:hover {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div a[href*='/oauth/']:hover {
   background: var(--field-bg-hover);
   border-color: rgb(var(--border-medium));
 }
 
 /* Layered glass card with a purple-to-gold hairline border. */
-div:has(> main):has(form[aria-label="Login form"]) > main > div {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
   border: 1px solid transparent;
   border-radius: 20px;
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
 }
 
-div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"] {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"] {
   border: 0;
   color: #fff;
   background: linear-gradient(135deg, var(--cmu-purple-light) 0%, var(--cmu-purple) 55%, #43206a 100%);
@@ -413,7 +450,7 @@ div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"] 
   transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
 
-div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"]:hover {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"]:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
   box-shadow:
@@ -423,7 +460,7 @@ div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"]:
 
 /* ============================ Dark: orbit view ============================ */
 
-html.dark div:has(> main):has(form[aria-label="Login form"]) {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
   /* Dark theme tokens (client/src/style.css .dark) keep the form legible on black. */
   --text-primary: var(--gray-100);
   --text-secondary: var(--gray-300);
@@ -439,7 +476,7 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) {
 }
 
 /* Fine, slowly drifting star dust. */
-html.dark div:has(> main):has(form[aria-label="Login form"])::before {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::before {
   top: -700px;
   left: -700px;
   width: calc(100vw + 700px);
@@ -521,12 +558,12 @@ html.dark div:has(> main):has(form[aria-label="Login form"])::before {
 }
 
 /* Two sparse layers of brighter stars fading out of phase. */
-html.dark div:has(> main):has(form[aria-label="Login form"])::after,
-html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::before {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::after,
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::before {
   inset: 0;
 }
 
-html.dark div:has(> main):has(form[aria-label="Login form"])::after {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::after {
   background-image:
     radial-gradient(2.2px 2.2px at 355px 386px, #ffffff, transparent),
     radial-gradient(8.8px 8.8px at 355px 386px, rgba(180, 200, 255, 0.12), transparent),
@@ -546,7 +583,7 @@ html.dark div:has(> main):has(form[aria-label="Login form"])::after {
   animation: lux-twinkle 4.2s ease-in-out infinite alternate;
 }
 
-html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::before {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::before {
   background-image:
     radial-gradient(1.4px 1.4px at 215px 367px, rgba(255,238,215,0.95), transparent),
     radial-gradient(5.6px 5.6px at 215px 367px, rgba(180, 200, 255, 0.12), transparent),
@@ -565,7 +602,7 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="
 }
 
 /* Planet horizon: a huge dark sphere whose top edge is lit by a thin atmosphere. */
-html.dark div:has(> main):has(form[aria-label="Login form"]) > main::before {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main::before {
   --planet: max(170vw, 1600px);
   top: 76vh;
   left: calc(50vw - var(--planet) / 2);
@@ -583,7 +620,7 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) > main::before {
 }
 
 /* Sunrise flare cresting the horizon, behind the card. */
-html.dark div:has(> main):has(form[aria-label="Login form"]) > main::after {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main::after {
   top: 76vh;
   left: 50vw;
   width: min(900px, 120vw);
@@ -597,7 +634,7 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) > main::after {
 }
 
 /* A faint, rare shooting star. */
-html.dark div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::before {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div.absolute.bottom-0::before {
   top: 16%;
   left: 70%;
   width: 180px;
@@ -608,24 +645,24 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bott
   animation: lux-meteor 14s ease-in 4s infinite;
 }
 
-html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::after {
   /* Same colour as the "Chiang Mai University Business School" line in logo-dark.png. */
   color: #e4e2ec;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
 }
 
-html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) img {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"]) img {
   filter: drop-shadow(0 0 28px rgba(170, 120, 255, 0.35)) drop-shadow(0 10px 24px rgba(0, 0, 0, 0.7));
 }
 
-html.dark div:has(> main):has(form[aria-label="Login form"]) {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
   --field-bg: rgba(255, 255, 255, 0.045);
   --field-bg-hover: rgba(255, 255, 255, 0.09);
   --field-autofill: #17151f;
   --field-text: #ffffff;
 }
 
-html.dark div:has(> main):has(form[aria-label="Login form"]) > main > div {
+html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
   background:
     linear-gradient(rgba(10, 9, 16, 0.74), rgba(10, 9, 16, 0.74)) padding-box,
     linear-gradient(140deg, rgba(180, 140, 255, 0.55), rgba(255, 255, 255, 0.06) 35%, rgba(255, 255, 255, 0.04) 65%, rgba(201, 164, 92, 0.45)) border-box;
@@ -637,7 +674,7 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) > main > div {
 
 /* ========================= Light: above the clouds ========================= */
 
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
   --sun-x: 76vw;
   --sun-y: 57vh;
   --field-bg: rgba(255, 255, 255, 0.5);
@@ -654,7 +691,7 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) {
 }
 
 /* Slow, soft light rays fanning out from the sun. */
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"])::before {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::before {
   top: var(--sun-y);
   left: var(--sun-x);
   width: 170vmax;
@@ -667,7 +704,7 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"])::before {
 }
 
 /* The sun, low on the horizon with a wide bloom. */
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"])::after {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::after {
   top: var(--sun-y);
   left: var(--sun-x);
   width: clamp(90px, 8vw, 140px);
@@ -683,7 +720,7 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"])::after {
 }
 
 /* Sea of clouds: a hazy back layer and a brighter, faster front layer. */
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > main::before {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main::before {
   bottom: 0;
   left: -1800px;
   width: calc(100vw + 1800px);
@@ -754,7 +791,7 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > main::befor
   animation: lux-cloud-back 280s linear infinite;
 }
 
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > main::after {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main::after {
   bottom: 0;
   left: -2200px;
   width: calc(100vw + 2200px);
@@ -817,7 +854,7 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > main::after
 }
 
 /* High, thin cirrus. */
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::before {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::before {
   top: 0;
   left: -2400px;
   width: calc(100vw + 2400px);
@@ -836,21 +873,21 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) div:has(> img
   will-change: transform;
 }
 
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::before {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div.absolute.bottom-0::before {
   display: none;
 }
 
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::after {
   /* Same colour as the "Chiang Mai University Business School" line in the logo. */
   color: #404042;
   text-shadow: 0 1px 10px rgba(255, 255, 255, 0.7);
 }
 
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) img {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"]) img {
   filter: drop-shadow(0 12px 26px rgba(80, 50, 140, 0.28));
 }
 
-html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > main > div {
+html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
   background:
     linear-gradient(rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5)) padding-box,
     linear-gradient(140deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.35) 40%, rgba(190, 160, 230, 0.65)) border-box;
@@ -915,18 +952,18 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) > main > div 
 }
 
 @media (prefers-reduced-motion: reduce) {
-  div:has(> main):has(form[aria-label="Login form"])::before,
-  div:has(> main):has(form[aria-label="Login form"])::after,
-  div:has(> main):has(form[aria-label="Login form"]) > main::before,
-  div:has(> main):has(form[aria-label="Login form"]) > main::after,
-  div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::before {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::before,
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))::after,
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main::before,
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main::after,
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"])::before {
     animation: none;
   }
-  div:has(> main):has(form[aria-label="Login form"]) > div.absolute.bottom-0::before {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div.absolute.bottom-0::before {
     display: none;
   }
-  div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"],
-  div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"]:hover {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"],
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"]:hover {
     transition: none;
     transform: none;
   }

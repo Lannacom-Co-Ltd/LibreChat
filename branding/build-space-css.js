@@ -152,10 +152,13 @@ const cloudsFront = cloudBand({
 });
 const cirrus = wisps({ count: 5, ...WISP });
 
-/* Only the login screen renders the login form, so `:has()` scopes every rule to it
-   (not register or password reset) without touching LibreChat's markup. LibreChat puts
-   `dark` or `light` on <html>, which picks the theme. */
-const AUTH = 'div:has(> main):has(form[aria-label="Login form"])';
+/* The login screen is the auth page that renders the login form, or, when email login is
+   off (ALLOW_EMAIL_LOGIN=false), SSO buttons and no other form. The registration page also
+   shows SSO buttons but always has its own form, so it is left out, as are password reset
+   and 2FA. `:has()` scopes every rule this way without touching LibreChat's markup.
+   LibreChat puts `dark` or `light` on <html>, which picks the theme. */
+const AUTH =
+  'div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))';
 const LOGO = `${AUTH} div:has(> img[src="assets/logo.svg"])`;
 const CARD = `${AUTH} > main > div`;
 const BUTTON = `${AUTH} [data-testid="login-button"]`;
@@ -393,6 +396,43 @@ ${CARD} .border-t:has(> .absolute) + div {
 ${CARD} .border-t:has(> .absolute) + div + div,
 ${CARD} .border-t:has(> .absolute) + div + div > div:first-child {
   margin-top: 0;
+}
+
+/* SSO-only login (ALLOW_EMAIL_LOGIN=false): the buttons follow the title directly. */
+${CARD}:not(:has(.border-t > .absolute)) > h1 ~ div.mt-2:has(a[href*='/oauth/']) {
+  margin-top: var(--card-gap);
+}
+
+${CARD}:not(:has(.border-t > .absolute)) > h1 ~ div.mt-2:has(a[href*='/oauth/']) > div:first-child {
+  margin-top: 0;
+}
+
+/* With no email form, the SSO button is the only way in, so it takes the primary look. */
+${CARD}:not(:has(form)) a[href*='/oauth/'] {
+  justify-content: center;
+  min-height: var(--button-h);
+  border: 0;
+  color: #fff;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--cmu-purple-light) 0%, var(--cmu-purple) 55%, #43206a 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 28px -10px rgba(91, 44, 131, 0.75);
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
+  background: linear-gradient(135deg, var(--cmu-purple-light) 0%, var(--cmu-purple) 55%, #43206a 100%);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ${CARD}:not(:has(form)) a[href*='/oauth/'],
+  ${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
+    transition: none;
+    transform: none;
+  }
 }
 
 

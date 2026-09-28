@@ -11,7 +11,7 @@ by `docker-compose.override.yml`.
 | --- | --- |
 | Logo and icons | Bind-mounted over the files in `/app/client/dist/assets/` |
 | Login backdrop, title, card, button | `space.css`, linked into `index.html` by the api container's start command |
-| Scope | CSS `:has(form[aria-label="Login form"])` — only the login page changes |
+| Scope | CSS `:has(form[aria-label="Login form"])`, or the SSO buttons when there is no form — only the login page changes |
 | Theme | `html.dark` → space, otherwise → sky |
 | Language | `lang.js` makes English the default for anyone who hasn't picked one in Settings; the login form follows the chosen language |
 
@@ -41,6 +41,8 @@ by `docker-compose.override.yml`.
 | Login heading and tagline (per language) | `LOGIN_TITLES`, `LOGIN_TAGLINES` in `build-space-css.js` |
 | System name | `APP_TITLE` in `.env`, and the `<title>` replacement in `docker-compose.override.yml` |
 | New-chat greetings (random per page load, EN/TH) | `GREETINGS` in `build-space-css.js`; `librechat.yaml` `customWelcome` stays `{{user.name}}` |
+| SSO-only login (no email/password form) | `ALLOW_EMAIL_LOGIN=false` in `.env`; the SSO button then takes the primary purple style. Local accounts can no longer sign in through the UI — give an SSO account the ADMIN role first |
+| SSO button text | `OPENID_BUTTON_LABEL=Continue with CMU IT Account` in `.env` (one label for every language) |
 | Admin panel name | the `sed` lines under `admin-panel` in `docker-compose.override.yml`; icon is `icons/favicon.ico` |
 | Backdrop | Edit `build-space-css.js` |
 
@@ -52,6 +54,7 @@ Both build scripts need Node.js and the repo's `node_modules` (`build-icons.js` 
 ## After a LibreChat upgrade
 
 The CSS keys off LibreChat's login markup (`form[aria-label="Login form"]`,
-`img[src="assets/logo.svg"]`, `[data-testid="login-button"]`, `[role="contentinfo"]`). If an
+`a[href*="/oauth/"]`, `img[src="assets/logo.svg"]`, `[data-testid="login-button"]`,
+`[role="contentinfo"]`). If an
 upgrade changes it, the login page falls back to LibreChat's default look — sign-in keeps
 working — and the selectors in `build-space-css.js` need updating.
