@@ -236,7 +236,7 @@ ${CARD} {
   --card-pad-x: clamp(18px, 5vw, 28px);
   --card-gap: clamp(14px, 2vh, 20px);
   --field-gap: 14px;
-  --button-h: 48px;
+  --button-h: 42px;
   width: min(370px, 100%);
   padding: var(--card-pad-y) var(--card-pad-x);
 }
@@ -330,7 +330,7 @@ ${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
     --card-pad-x: 20px;
     --card-gap: 14px;
     --field-gap: 12px;
-    --button-h: 46px;
+    --button-h: 42px;
     width: min(340px, 100%);
     border-radius: 18px;
   }
@@ -349,11 +349,6 @@ ${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
     padding-top: 1.3rem;
     padding-bottom: 0.3rem;
   }
-
-  ${CARD} a[href*='/oauth/'] {
-    padding-top: 0.65rem;
-    padding-bottom: 0.65rem;
-  }
 }
 
 /* Short screens (including short phones): tighter card spacing. */
@@ -363,18 +358,13 @@ ${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
     --card-pad-x: 22px;
     --card-gap: 12px;
     --field-gap: 10px;
-    --button-h: 44px;
+    --button-h: 40px;
   }
 
   ${FIELD},
   ${FIELD}:focus {
     padding-top: 1.3rem;
     padding-bottom: 0.3rem;
-  }
-
-  ${CARD} a[href*='/oauth/'] {
-    padding-top: 0.6rem;
-    padding-bottom: 0.6rem;
   }
 }
 
@@ -472,8 +462,12 @@ ${CARD} .border-t:has(> .absolute) > .absolute {
   letter-spacing: 0.08em;
 }
 
-/* SSO buttons (Continue with OpenID, etc.) match the glass fields. */
+/* SSO buttons (Continue with OpenID, etc.) match the glass fields, at the same slim height
+   as the Continue button: min-height sets it and the label centres vertically. */
 ${CARD} a[href*='/oauth/'] {
+  min-height: var(--button-h);
+  padding-top: 0;
+  padding-bottom: 0;
   background: var(--field-bg);
   border-color: rgb(var(--border-light));
   transition: background-color 0.2s ease, border-color 0.2s ease;
