@@ -7,6 +7,11 @@
  *   favicons and app icons          the dot mark alone (the wordmark is unreadable at 16px):
  *                                   transparent for browser tabs, white-backed where the OS
  *                                   needs an opaque tile; favicon.ico for the admin panel
+ *   sso-dark.png / sso-light.png    the "CMU" wordmark from branding/cmu-logo.webp for the
+ *                                   "Continue with CMU IT Account" button, without the
+ *                                   "CHIANG MAI UNIVERSITY" line (unreadable at icon size):
+ *                                   white letters for the dark theme, navy for the light one,
+ *                                   the orange 1 kept in both
  * docker-compose.override.yml mounts these over LibreChat's own files, so no LibreChat code
  * or image changes. Re-run after replacing the source logo:
  *   node branding/build-icons.js
@@ -18,6 +23,11 @@ const sharp = require(require.resolve('sharp', { paths: [path.join(__dirname, '.
 
 const SOURCE = path.join(__dirname, 'cmubs-logo.png');
 const OUT = path.join(__dirname, 'icons');
+const CMU_LOGO = path.join(__dirname, 'cmu-logo.webp');
+/** Shown about 18px tall; 4x covers high-DPI screens. */
+const SSO_ICON_HEIGHT = 72;
+/** The white letters on the light theme's white button. */
+const SSO_LETTERS_ON_LIGHT = [26, 59, 94];
 
 /** Region of the source holding the dot mark (left of the "CMU" wordmark, above the wave). */
 const MARK_REGION = { left: 40, top: 105, width: 160, height: 223 };
@@ -105,6 +115,38 @@ async function faviconIco(mark) {
   return Buffer.concat([header, ...images]);
 }
 
+/** The "CMU" letters: everything above the first fully transparent row under them. */
+async function cmuWordmark() {
+  const logo = await sharp(CMU_LOGO).trim({ threshold: 10 }).png().toBuffer();
+  const { data, info } = await sharp(logo).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const rowIsEmpty = (y) => {
+    for (let x = 0; x < info.width; x++) {
+      if (data[(y * info.width + x) * 4 + 3] > 8) {
+        return false;
+      }
+    }
+    return true;
+  };
+  let gap = 0;
+  while (gap < info.height && !rowIsEmpty(gap)) {
+    gap++;
+  }
+  const letters = await sharp(logo).extract({ left: 0, top: 0, width: info.width, height: gap }).png().toBuffer();
+  return sharp(letters).trim({ threshold: 10 }).resize({ height: SSO_ICON_HEIGHT }).png().toBuffer();
+}
+
+/** Recolours the white letters, leaving the orange 1 and the edge alpha as they are. */
+async function recolourLetters(png, rgb) {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) {
+    const chroma = Math.max(data[i], data[i + 1], data[i + 2]) - Math.min(data[i], data[i + 1], data[i + 2]);
+    if (chroma < 40) {
+      [data[i], data[i + 1], data[i + 2]] = rgb;
+    }
+  }
+  return sharp(data, { raw: info }).png().toBuffer();
+}
+
 function logoSvg(png, { width, height }) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"><image width="${width}" height="${height}" href="data:image/png;base64,${png.toString('base64')}"/></svg>\n`;
 }
@@ -124,6 +166,9 @@ function logoSvg(png, { width, height }) {
   fs.writeFileSync(path.join(OUT, 'mark.png'), mark);
   await Promise.all(ICONS.map((spec) => icon(mark, spec)));
   fs.writeFileSync(path.join(OUT, 'favicon.ico'), await faviconIco(mark));
+  const wordmark = await cmuWordmark();
+  fs.writeFileSync(path.join(OUT, 'sso-dark.png'), wordmark);
+  fs.writeFileSync(path.join(OUT, 'sso-light.png'), await recolourLetters(wordmark, SSO_LETTERS_ON_LIGHT));
 
   const written = [
     'logo-light.png',
@@ -131,6 +176,8 @@ function logoSvg(png, { width, height }) {
     'logo.svg',
     'mark.png',
     'favicon.ico',
+    'sso-dark.png',
+    'sso-light.png',
     ...ICONS.map((i) => i.file),
   ];
   console.log(`icons written to ${OUT} (logo ${size.width}x${size.height}): ${written.join(', ')}`);

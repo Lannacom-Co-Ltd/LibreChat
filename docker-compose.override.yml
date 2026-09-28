@@ -35,7 +35,7 @@ services:
         grep -q 'assets/custom/greeting.js' /app/client/dist/index.html ||
         sed -i 's#</head>#<script src="assets/custom/greeting.js?v=1"></script></head>#' /app/client/dist/index.html;
         grep -q 'assets/custom/space.css' /app/client/dist/index.html ||
-        sed -i 's#</head>#<link rel="stylesheet" href="assets/custom/space.css?v=41" /></head>#' /app/client/dist/index.html;
+        sed -i 's#</head>#<link rel="stylesheet" href="assets/custom/space.css?v=44" /></head>#' /app/client/dist/index.html;
         exec npm run backend
 
   # Admin panel (port 3000): CMUBS name and icon. The name lives in the panel's compiled

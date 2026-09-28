@@ -484,6 +484,63 @@ ${CARD} a[href*='/oauth/']:hover {
   border-color: rgb(var(--border-medium));
 }
 
+/* The CMU wordmark in place of LibreChat's default OpenID glyph on the SSO button (the
+   sign-in is a CMU IT account): white letters on the dark theme's navy button, navy on the
+   light theme's white one. The glyph's path is hidden and the wordmark is painted as the
+   icon's background, sized to its 242:72 proportions, so the button's layout is untouched.
+   An OPENID_IMAGE_URL set in .env renders an <img> instead and is left as it is. */
+${AUTH} svg#openid {
+  --sso-icon-h: 0.875rem;
+  flex: none;
+  width: calc(var(--sso-icon-h) * 242 / 72);
+  height: var(--sso-icon-h);
+  background: url('icons/sso-light.png?v=${LOGO_VERSION}') center / contain no-repeat;
+}
+
+${DARK} svg#openid {
+  background-image: url('icons/sso-dark.png?v=${LOGO_VERSION}');
+}
+
+${AUTH} svg#openid > path {
+  display: none;
+}
+
+/* The wordmark is wider than the glyph it replaces, so the button trims its side padding and
+   icon gap to keep "Continue with CMU IT Account" on one line down to 360px screens; below
+   that the label wraps rather than overflowing. */
+${CARD} a[href*='/oauth/']:has(> svg#openid) {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+${CARD} a[href*='/oauth/']:has(> svg#openid) > svg#openid + * {
+  margin-left: 0.625rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 379px) {
+  ${AUTH} svg#openid {
+    --sso-icon-h: 0.75rem;
+  }
+
+  ${CARD} a[href*='/oauth/']:has(> svg#openid) {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  ${CARD} a[href*='/oauth/']:has(> svg#openid) > svg#openid + * {
+    margin-left: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 359px) {
+  ${CARD} a[href*='/oauth/']:has(> svg#openid) > svg#openid + * {
+    white-space: normal;
+    text-align: left;
+  }
+}
+
 /* Surfaces step up in lightness, page -> card -> buttons and fields, so each layer reads
    at a glance in either theme; the card is a flat panel with a hairline edge, blurred just
    enough to quiet the line art behind it. */

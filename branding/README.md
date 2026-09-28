@@ -21,6 +21,7 @@ by `docker-compose.override.yml`.
 | File | Purpose |
 | --- | --- |
 | `cmubs-logo.png` | Source logo (a 1024px+ PNG or an SVG gives sharper results) |
+| `cmu-logo.webp` | Source for the SSO button icon (the CMU wordmark, white letters and an orange 1) |
 | `build-icons.js` | Builds `icons/`: light and dark logos, and round favicons / app icons from the dot mark |
 | `backdrops/dark.jpg`, `backdrops/light.jpg` | Login backdrops (2000×1125; plain sky on top, skyline along the bottom) |
 | `build-space-css.js` | Builds `space.css`; login title, colours, and backdrop placement live here |
@@ -45,6 +46,7 @@ by `docker-compose.override.yml`.
 | New-chat greetings (random per page load, EN/TH) | `GREETINGS` in `build-space-css.js`; `librechat.yaml` `customWelcome` stays `{{user.name}}` |
 | SSO-only login (no email/password form) | `ALLOW_EMAIL_LOGIN=false` in `.env`; the SSO button then takes the primary purple style. Local accounts can no longer sign in through the UI — give an SSO account the ADMIN role first |
 | SSO button text | `OPENID_BUTTON_LABEL=Continue with CMU IT Account` in `.env` (one label for every language) |
+| SSO button icon | The CMU wordmark: replace `cmu-logo.webp`, run `node branding/build-icons.js` (writes `icons/sso-dark.png` and `icons/sso-light.png`) and bump `LOGO_VERSION`. It replaces the default OpenID glyph via `space.css`; an `OPENID_IMAGE_URL` in `.env` takes precedence |
 | Admin panel name | the `sed` lines under `admin-panel` in `docker-compose.override.yml`; icon is `icons/favicon.ico` |
 | Backdrop | Replace the image in `backdrops/`, update its `sky` colour in `BACKDROPS` in `build-space-css.js` if it changed, and bump `BACKDROP_VERSION` |
 
