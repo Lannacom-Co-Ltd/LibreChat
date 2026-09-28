@@ -289,7 +289,7 @@ ${CARD}:not(:has(form)) a[href*='/oauth/'] {
   min-height: var(--button-h);
   border: 1px solid var(--button-border);
   color: var(--button-fg);
-  font-weight: 600;
+  font-weight: 500;
   background: var(--button-bg);
   box-shadow: var(--button-shadow);
   transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
@@ -297,8 +297,8 @@ ${CARD}:not(:has(form)) a[href*='/oauth/'] {
 
 ${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
   background: var(--button-bg-hover);
+  border-color: var(--button-border-hover);
   box-shadow: var(--button-shadow-hover);
-  transform: translateY(-1px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -484,10 +484,14 @@ ${CARD} a[href*='/oauth/']:hover {
   border-color: rgb(var(--border-medium));
 }
 
-/* Layered glass card with a hairline border that echoes the backdrop's line art. */
+/* Surfaces step up in lightness, page -> card -> buttons and fields, so each layer reads
+   at a glance in either theme; the card is a flat panel with a hairline edge, blurred just
+   enough to quiet the line art behind it. */
 ${CARD} {
-  border: 1px solid transparent;
-  border-radius: 20px;
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
 }
@@ -502,7 +506,7 @@ ${BUTTON} {
 
 ${BUTTON}:hover {
   background: var(--button-bg-hover);
-  transform: translateY(-1px);
+  border-color: var(--button-border-hover);
   box-shadow: var(--button-shadow-hover);
 }
 
@@ -533,44 +537,44 @@ ${DARK_LOGO} img {
   filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.12)) drop-shadow(0 10px 24px rgba(6, 18, 34, 0.6));
 }
 
+/* Dark: page #1a3b5e (the backdrop's sky) -> card one step lighter -> buttons and fields
+   another step lighter, with white text. */
 ${DARK} {
-  --field-bg: rgba(255, 255, 255, 0.045);
-  --field-bg-hover: rgba(255, 255, 255, 0.09);
-  --field-autofill: #132b46;
+  --card-bg: rgba(34, 71, 109, 0.9);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --card-shadow: 0 24px 60px -28px rgba(6, 18, 34, 0.6);
+  --field-bg: rgba(255, 255, 255, 0.08);
+  --field-bg-hover: rgba(255, 255, 255, 0.12);
+  --field-autofill: #2c5279;
   --field-text: #ffffff;
-  /* Primary button: solid navy (the backdrop's sky) with white text, edged with a hairline
-     so it stands off the navy card. */
-  --button-bg: #1a3b5e;
-  --button-bg-hover: #234b74;
+  --button-bg: #2f5781;
+  --button-bg-hover: #3a6390;
   --button-fg: #ffffff;
-  --button-border: rgba(255, 255, 255, 0.2);
-  --button-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.7);
-  --button-shadow-hover: 0 14px 32px -12px rgba(0, 0, 0, 0.8);
-}
-
-${DARK} > main > div {
-  background:
-    linear-gradient(rgba(17, 40, 66, 0.78), rgba(14, 33, 56, 0.82)) padding-box,
-    linear-gradient(160deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0.06) 70%, rgba(94, 196, 216, 0.4)) border-box;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 30px 80px -30px rgba(4, 14, 28, 0.85);
+  --button-border: rgba(255, 255, 255, 0.08);
+  --button-border-hover: rgba(255, 255, 255, 0.16);
+  --button-shadow: none;
+  --button-shadow-hover: none;
 }
 
 /* ========================== Light: teal skyline ========================== */
 
 ${LIGHT} {
-  --field-bg: rgba(255, 255, 255, 0.5);
-  --field-bg-hover: rgba(255, 255, 255, 0.75);
-  --field-autofill: #eef5f7;
+  /* Light: page #e8e8e8 (the backdrop's sky) -> card a step lighter -> buttons and fields
+     white, edged with navy hairlines and navy text. */
+  --card-bg: rgba(247, 247, 247, 0.92);
+  --card-border: rgba(26, 59, 94, 0.12);
+  --card-shadow: 0 24px 60px -30px rgba(26, 59, 94, 0.3);
+  --field-bg: #ffffff;
+  --field-bg-hover: #ffffff;
+  --field-autofill: #ffffff;
   --field-text: rgb(var(--text-primary));
-  /* Primary button: solid white with navy text, edged so it stands off the white card. */
   --button-bg: #ffffff;
-  --button-bg-hover: #f1f5f9;
+  --button-bg-hover: #f7f9fb;
   --button-fg: #1a3b5e;
-  --button-border: rgba(26, 59, 94, 0.2);
-  --button-shadow: 0 8px 20px -12px rgba(26, 59, 94, 0.45);
-  --button-shadow-hover: 0 12px 26px -12px rgba(26, 59, 94, 0.55);
+  --button-border: rgba(26, 59, 94, 0.16);
+  --button-border-hover: rgba(26, 59, 94, 0.3);
+  --button-shadow: 0 1px 2px rgba(26, 59, 94, 0.06);
+  --button-shadow-hover: 0 2px 6px rgba(26, 59, 94, 0.1);
   --accent-primary: 8 127 152;
   --accent-primary-hover: 7 95 115;
   color-scheme: light;
@@ -585,16 +589,6 @@ ${LIGHT_LOGO}::after {
 
 ${LIGHT_LOGO} img {
   filter: drop-shadow(0 10px 22px rgba(26, 59, 94, 0.16));
-}
-
-${LIGHT} > main > div {
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.68)) padding-box,
-    linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.5) 45%, rgba(52, 137, 157, 0.45)) border-box;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 30px 70px -30px rgba(26, 59, 94, 0.3),
-    0 10px 24px -12px rgba(52, 137, 157, 0.2);
 }
 
 @media (prefers-reduced-motion: reduce) {
