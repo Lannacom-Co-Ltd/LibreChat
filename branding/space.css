@@ -2,12 +2,39 @@
 
 /* ================================ Shared ================================ */
 
+/* Layout: the logo, tagline and card stack as one group, centred vertically. Nothing is
+   taken out of the flow, so a taller card (e.g. with SSO buttons) or a short screen can
+   never make them overlap; when the group is taller than the screen, the page scrolls. */
 div:has(> main):has(form[aria-label="Login form"]) {
   --cmu-purple: #5b2c83;
   --cmu-purple-light: #8a55c9;
   --cmu-gold: #c9a45c;
+  --logo-h: clamp(72px, 12vh, 132px);
+  --stack-gap: clamp(20px, 4.5vh, 48px);
   isolation: isolate;
-  overflow: hidden;
+  overflow-x: clip;
+  justify-content: center;
+  gap: var(--stack-gap);
+  /* Bottom padding keeps the card clear of the theme toggles in the bottom-left corner. */
+  padding: clamp(20px, 4vh, 48px) 16px clamp(64px, 9vh, 88px);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main {
+  flex: 0 0 auto;
+}
+
+@media (max-height: 760px) {
+  div:has(> main):has(form[aria-label="Login form"]) {
+    --logo-h: clamp(56px, 10vh, 84px);
+    --stack-gap: clamp(16px, 3vh, 28px);
+  }
+}
+
+@media (max-height: 620px) {
+  div:has(> main):has(form[aria-label="Login form"]) {
+    --logo-h: 52px;
+    --stack-gap: 12px;
+  }
 }
 
 div:has(> main):has(form[aria-label="Login form"])::before,
@@ -39,27 +66,29 @@ html.dark img[src="assets/logo.svg"] {
   content: url('icons/logo-dark.png?v=2');
 }
 
-/* Logo with a soft halo, taken out of the flow so the card centres on the whole
-   screen instead of on the space below the logo. The filter sits on the image, not the
-   wrapper, so the wrapper's fixed-position scene layers stay anchored to the viewport. */
+/* Logo with a soft halo, then the tagline, stacked above the card. The filter sits on the
+   image, not the wrapper, so the wrapper's fixed-position scene layers stay anchored to
+   the viewport. */
 div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: clamp(80px, 13vh, 140px);
-  margin-top: clamp(20px, 4vh, 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: auto;
+  margin: 0;
 }
 
-/* Tagline under the logo, hanging off the absolutely positioned logo wrapper. */
+div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"]) img {
+  height: var(--logo-h);
+  width: auto;
+  max-width: 88vw;
+  object-fit: contain;
+}
+
 div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
   content: 'The nationally leading business school committed to incubating innovative entrepreneurship, and social responsibility for sustainable development';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: min(620px, 88vw);
-  margin-top: clamp(8px, 1.4vh, 14px);
-  transform: translateX(-50%);
+  display: block;
+  width: min(620px, 100%);
+  margin-top: clamp(6px, 1.2vh, 14px);
   font-size: clamp(0.72rem, 1.05vw, 0.875rem);
   line-height: 1.5;
   letter-spacing: 0.01em;
@@ -71,13 +100,145 @@ html:lang(th) div:has(> main):has(form[aria-label="Login form"]) div:has(> img[s
   content: 'สถาบันการศึกษาด้านบริหารธุรกิจชั้นนำของประเทศ ที่มุ่งบ่มเพาะความเป็นผู้ประกอบการเชิงนวัตกรรมและจิตสำนึกต่อสังคม เพื่อการพัฒนาที่ยั่งยืน';
 }
 
-/* The footer (privacy / terms links) likewise floats at the bottom, so it doesn't push the
-   card off-centre either. */
+@media (max-height: 620px) {
+  div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+}
+
+/* The footer (privacy / terms links) floats at the bottom rather than joining the stack. */
 div:has(> main):has(form[aria-label="Login form"]) > [role='contentinfo'] {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+/* Card proportions. LibreChat's card is a fixed 370px with uneven spacing (16px top and
+   bottom padding, a 40px gap under the title, 48px of stacked margins under "OR"). One
+   rhythm here, tightened further on short screens so the card with SSO buttons still
+   fits without scrolling down to 560px of height. */
+div:has(> main):has(form[aria-label="Login form"]) > main > div {
+  --card-pad-y: clamp(20px, 3vh, 28px);
+  --card-pad-x: clamp(18px, 5vw, 28px);
+  --card-gap: clamp(14px, 2vh, 20px);
+  --field-gap: 14px;
+  --button-h: 48px;
+  width: min(370px, 100%);
+  padding: var(--card-pad-y) var(--card-pad-x);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div > h1 {
+  margin-bottom: 0;
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div > form {
+  margin-top: var(--card-gap);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div > form > div:first-child {
+  margin-bottom: var(--field-gap);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div > form > div:has(> [data-testid='login-button']) {
+  margin-top: var(--card-gap);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) [data-testid="login-button"] {
+  height: var(--button-h);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) {
+  margin-top: var(--card-gap);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) + div {
+  margin-top: var(--card-gap);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) + div + div,
+div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) + div + div > div:first-child {
+  margin-top: 0;
+}
+
+@media (max-height: 700px) {
+  div:has(> main):has(form[aria-label="Login form"]) > main > div {
+    --card-pad-y: 16px;
+    --card-pad-x: 22px;
+    --card-gap: 12px;
+    --field-gap: 10px;
+    --button-h: 44px;
+  }
+
+  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles,
+  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:focus {
+    padding-top: 1.3rem;
+    padding-bottom: 0.3rem;
+  }
+
+  div:has(> main):has(form[aria-label="Login form"]) > main > div a[href*='/oauth/'] {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+  }
+}
+
+/* Phones (portrait): a narrower, lighter card with room around it, so the logo, tagline
+   and card read as three calm blocks rather than one crowded column. */
+@media (max-width: 480px) {
+  div:has(> main):has(form[aria-label="Login form"]) {
+    --logo-h: clamp(60px, 9vh, 88px);
+    --stack-gap: clamp(22px, 4.5vh, 40px);
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+    width: min(320px, 100%);
+    font-size: 0.75rem;
+  }
+
+  div:has(> main):has(form[aria-label="Login form"]) > main > div {
+    --card-pad-y: 20px;
+    --card-pad-x: 20px;
+    --card-gap: 14px;
+    --field-gap: 12px;
+    --button-h: 46px;
+    width: min(340px, 100%);
+    border-radius: 18px;
+  }
+
+  div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
+    font-size: 1.3rem;
+    line-height: 1.9rem;
+  }
+
+  html:lang(th) div:has(> main):has(form[aria-label="Login form"]) > main > div > h1::after {
+    font-size: 1.15rem;
+  }
+
+  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles,
+  div:has(> main):has(form[aria-label="Login form"]) form .webkit-dark-styles:focus {
+    padding-top: 1.3rem;
+    padding-bottom: 0.3rem;
+  }
+
+  div:has(> main):has(form[aria-label="Login form"]) > main > div a[href*='/oauth/'] {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+  }
+}
+
+/* Landscape phones and very short windows: drop the tagline, keep the logo small. */
+@media (max-height: 520px) {
+  div:has(> main):has(form[aria-label="Login form"]) {
+    --logo-h: 40px;
+    --stack-gap: 10px;
+  }
+
+  div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="assets/logo.svg"])::after {
+    display: none;
+  }
 }
 
 /* Custom heading. LibreChat has no setting for the login title, so the original text is
@@ -157,6 +318,33 @@ div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:p
 div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class],
 div:has(> main):has(form[aria-label="Login form"]) form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class]::after {
   line-height: 1rem;
+}
+
+/* "OR" divider above the SSO buttons: LibreChat draws a full border and masks it with a
+   solid label background, which shows as a dark chip on the glass. Instead the line fades
+   in from the edges and leaves a gap for the label. */
+div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgb(var(--border-medium)) 22%, rgb(var(--border-medium)) 40%, transparent 40%, transparent 60%, rgb(var(--border-medium)) 60%, rgb(var(--border-medium)) 78%, transparent 100%);
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div .border-t:has(> .absolute) > .absolute {
+  background: transparent;
+  color: rgb(var(--text-secondary));
+  letter-spacing: 0.08em;
+}
+
+/* SSO buttons (Continue with OpenID, etc.) match the glass fields. */
+div:has(> main):has(form[aria-label="Login form"]) > main > div a[href*='/oauth/'] {
+  background: var(--field-bg);
+  border-color: rgb(var(--border-light));
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+div:has(> main):has(form[aria-label="Login form"]) > main > div a[href*='/oauth/']:hover {
+  background: var(--field-bg-hover);
+  border-color: rgb(var(--border-medium));
 }
 
 /* Layered glass card with a purple-to-gold hairline border. */
@@ -384,6 +572,7 @@ html.dark div:has(> main):has(form[aria-label="Login form"]) div:has(> img[src="
 
 html.dark div:has(> main):has(form[aria-label="Login form"]) {
   --field-bg: rgba(255, 255, 255, 0.045);
+  --field-bg-hover: rgba(255, 255, 255, 0.09);
   --field-autofill: #17151f;
   --field-text: #ffffff;
 }
@@ -404,6 +593,7 @@ html:not(.dark) div:has(> main):has(form[aria-label="Login form"]) {
   --sun-x: 76vw;
   --sun-y: 57vh;
   --field-bg: rgba(255, 255, 255, 0.5);
+  --field-bg-hover: rgba(255, 255, 255, 0.75);
   --field-autofill: #f3f0f8;
   --field-text: rgb(var(--text-primary));
   --accent-primary: 111 60 170;
