@@ -11,9 +11,13 @@
    and the toggles in the bottom corner can never sit on top of the card. When everything is
    taller than the screen, the page scrolls. */
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
-  --cmu-purple: #5b2c83;
-  --cmu-purple-light: #8a55c9;
-  --cmu-gold: #c9a45c;
+  /* The logo's own gradient: its dots run from deep purple (bottom left) through mauve to
+     teal (top right), and the wordmark from purple "CMU" to teal "bs". The button follows
+     it left to right with the same upward tilt. White text across the middle of the button,
+     where the label sits, stays above 4.5:1. */
+  --button-bg: linear-gradient(70deg, #6c3494 0%, #8559a0 38%, #3b739d 72%, #0e88a6 100%);
+  --button-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 12px 28px -10px rgba(76, 72, 158, 0.7);
+  --button-shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 16px 34px -10px rgba(76, 72, 158, 0.8);
   --logo-h: clamp(72px, 12vh, 132px);
   --stack-gap: clamp(20px, 4.5vh, 48px);
   --page-pad-y: clamp(20px, 4vh, 48px);
@@ -201,15 +205,14 @@ div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"])
   border: 0;
   color: #fff;
   font-weight: 600;
-  background: linear-gradient(135deg, var(--cmu-purple-light) 0%, var(--cmu-purple) 55%, #43206a 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 12px 28px -10px rgba(91, 44, 131, 0.75);
+  background: var(--button-bg);
+  box-shadow: var(--button-shadow);
   transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
 
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(form)) a[href*='/oauth/']:hover {
-  background: linear-gradient(135deg, var(--cmu-purple-light) 0%, var(--cmu-purple) 55%, #43206a 100%);
+  background: var(--button-bg);
+  box-shadow: var(--button-shadow-hover);
   filter: brightness(1.08);
   transform: translateY(-1px);
 }
@@ -418,7 +421,7 @@ div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"])
   border-color: rgb(var(--border-medium));
 }
 
-/* Layered glass card with a purple-to-gold hairline border. */
+/* Layered glass card with a hairline border that echoes the backdrop's line art. */
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
   border: 1px solid transparent;
   border-radius: 20px;
@@ -429,19 +432,15 @@ div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"])
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"] {
   border: 0;
   color: #fff;
-  background: linear-gradient(135deg, var(--cmu-purple-light) 0%, var(--cmu-purple) 55%, #43206a 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 12px 28px -10px rgba(91, 44, 131, 0.75);
+  background: var(--button-bg);
+  box-shadow: var(--button-shadow);
   transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
 
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"]:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 16px 34px -10px rgba(91, 44, 131, 0.85);
+  box-shadow: var(--button-shadow-hover);
 }
 
 /* ============================ Dark: navy skyline ============================ */
@@ -455,8 +454,8 @@ html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="
   --surface-primary: var(--gray-900);
   --border-light: 52 72 102;
   --border-medium: 80 104 138;
-  --accent-primary: 176 132 240;
-  --accent-primary-hover: 200 166 250;
+  --accent-primary: 94 196 216;
+  --accent-primary-hover: 140 216 230;
   color-scheme: dark;
   background: linear-gradient(rgba(218, 227, 244, 0.9), rgba(218, 227, 244, 0.9)) center bottom / 100% 1px no-repeat,
     url('backdrops/dark.jpg?v=1') center bottom / var(--backdrop-w) auto no-repeat,
@@ -470,7 +469,7 @@ html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="
 }
 
 html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"]) img {
-  filter: drop-shadow(0 0 28px rgba(170, 120, 255, 0.35)) drop-shadow(0 10px 24px rgba(6, 18, 34, 0.6));
+  filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.12)) drop-shadow(0 10px 24px rgba(6, 18, 34, 0.6));
 }
 
 html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
@@ -482,12 +481,11 @@ html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="
 
 html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
   background:
-    linear-gradient(rgba(12, 29, 51, 0.74), rgba(12, 29, 51, 0.74)) padding-box,
-    linear-gradient(140deg, rgba(180, 140, 255, 0.55), rgba(255, 255, 255, 0.06) 35%, rgba(255, 255, 255, 0.04) 65%, rgba(201, 164, 92, 0.45)) border-box;
+    linear-gradient(rgba(17, 40, 66, 0.78), rgba(14, 33, 56, 0.82)) padding-box,
+    linear-gradient(160deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0.06) 70%, rgba(94, 196, 216, 0.4)) border-box;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 40px 100px -30px rgba(4, 12, 24, 0.9),
-    0 0 90px -20px rgba(120, 80, 220, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 30px 80px -30px rgba(4, 14, 28, 0.85);
 }
 
 /* ========================== Light: teal skyline ========================== */
@@ -495,10 +493,10 @@ html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="
 html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
   --field-bg: rgba(255, 255, 255, 0.5);
   --field-bg-hover: rgba(255, 255, 255, 0.75);
-  --field-autofill: #f3f0f8;
+  --field-autofill: #eef5f7;
   --field-text: rgb(var(--text-primary));
-  --accent-primary: 111 60 170;
-  --accent-primary-hover: 91 44 131;
+  --accent-primary: 8 127 152;
+  --accent-primary-hover: 7 95 115;
   color-scheme: light;
   background: linear-gradient(#34899d, #34899d) center bottom / 100% 1px no-repeat,
     url('backdrops/light.jpg?v=1') center bottom / var(--backdrop-w) auto no-repeat,
@@ -512,17 +510,17 @@ html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[h
 }
 
 html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) div:has(> img[src="assets/logo.svg"]) img {
-  filter: drop-shadow(0 12px 26px rgba(80, 50, 140, 0.28));
+  filter: drop-shadow(0 10px 22px rgba(26, 59, 94, 0.16));
 }
 
 html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5)) padding-box,
-    linear-gradient(140deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.35) 40%, rgba(190, 160, 230, 0.65)) border-box;
+    linear-gradient(rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.68)) padding-box,
+    linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.5) 45%, rgba(52, 137, 157, 0.45)) border-box;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 40px 90px -30px rgba(70, 50, 130, 0.45),
-    0 12px 30px -12px rgba(52, 137, 157, 0.2);
+    0 30px 70px -30px rgba(26, 59, 94, 0.3),
+    0 10px 24px -12px rgba(52, 137, 157, 0.2);
 }
 
 @media (prefers-reduced-motion: reduce) {
