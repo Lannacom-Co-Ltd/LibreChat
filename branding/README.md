@@ -23,6 +23,7 @@ by `docker-compose.override.yml`.
 | `cmubs-logo.png` | Source logo (a 1024px+ PNG or an SVG gives sharper results) |
 | `cmu-logo.webp` | Source for the SSO button icon (the CMU wordmark, white letters and an orange 1) |
 | `build-icons.js` | Builds `icons/`: light and dark logos, and round favicons / app icons from the dot mark |
+| `fonts/montserrat.woff2`, `fonts/OFL.txt` | Montserrat (weights 300–700, Latin), the CMUBS website typeface, used for all login page text; Thai falls back to the system font. SIL Open Font License |
 | `backdrops/dark.jpg`, `backdrops/light.jpg` | Login backdrops (2000×1125; plain sky on top, skyline along the bottom) |
 | `build-space-css.js` | Builds `space.css`; login title, colours, and backdrop placement live here |
 | `space.css`, `icons/` | Generated — do not edit by hand |

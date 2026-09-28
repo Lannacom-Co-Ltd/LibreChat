@@ -10,7 +10,7 @@
  *   sso-dark.png / sso-light.png    the "CMU" wordmark from branding/cmu-logo.webp for the
  *                                   "Continue with CMU IT Account" button, without the
  *                                   "CHIANG MAI UNIVERSITY" line (unreadable at icon size):
- *                                   white letters for the dark theme, navy for the light one,
+ *                                   white letters for the dark theme, deep teal for the light one,
  *                                   the orange 1 kept in both
  * docker-compose.override.yml mounts these over LibreChat's own files, so no LibreChat code
  * or image changes. Re-run after replacing the source logo:
@@ -26,8 +26,8 @@ const OUT = path.join(__dirname, 'icons');
 const CMU_LOGO = path.join(__dirname, 'cmu-logo.webp');
 /** Shown about 18px tall; 4x covers high-DPI screens. */
 const SSO_ICON_HEIGHT = 72;
-/** The white letters on the light theme's white button. */
-const SSO_LETTERS_ON_LIGHT = [26, 59, 94];
+/** The white letters on the light theme's white button: the button's deep teal text colour. */
+const SSO_LETTERS_ON_LIGHT = [20, 94, 110];
 
 /** Region of the source holding the dot mark (left of the "CMU" wordmark, above the wave). */
 const MARK_REGION = { left: 40, top: 105, width: 160, height: 223 };
