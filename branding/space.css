@@ -11,13 +11,6 @@
    and the toggles in the bottom corner can never sit on top of the card. When everything is
    taller than the screen, the page scrolls. */
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) {
-  /* The logo's own gradient: its dots run from deep purple (bottom left) through mauve to
-     teal (top right), and the wordmark from purple "CMU" to teal "bs". The button follows
-     it left to right with the same upward tilt. White text across the middle of the button,
-     where the label sits, stays above 4.5:1. */
-  --button-bg: linear-gradient(70deg, #6c3494 0%, #8559a0 38%, #3b739d 72%, #0e88a6 100%);
-  --button-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 12px 28px -10px rgba(76, 72, 158, 0.7);
-  --button-shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 16px 34px -10px rgba(76, 72, 158, 0.8);
   --logo-h: clamp(72px, 12vh, 132px);
   --stack-gap: clamp(20px, 4.5vh, 48px);
   --page-pad-y: clamp(20px, 4vh, 48px);
@@ -202,18 +195,17 @@ div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"])
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(form)) a[href*='/oauth/'] {
   justify-content: center;
   min-height: var(--button-h);
-  border: 0;
-  color: #fff;
+  border: 1px solid var(--button-border);
+  color: var(--button-fg);
   font-weight: 600;
   background: var(--button-bg);
   box-shadow: var(--button-shadow);
-  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:not(:has(form)) a[href*='/oauth/']:hover {
-  background: var(--button-bg);
+  background: var(--button-bg-hover);
   box-shadow: var(--button-shadow-hover);
-  filter: brightness(1.08);
   transform: translateY(-1px);
 }
 
@@ -430,15 +422,15 @@ div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"])
 }
 
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"] {
-  border: 0;
-  color: #fff;
+  border: 1px solid var(--button-border);
+  color: var(--button-fg);
   background: var(--button-bg);
   box-shadow: var(--button-shadow);
-  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) [data-testid="login-button"]:hover {
-  filter: brightness(1.08);
+  background: var(--button-bg-hover);
   transform: translateY(-1px);
   box-shadow: var(--button-shadow-hover);
 }
@@ -477,6 +469,14 @@ html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="
   --field-bg-hover: rgba(255, 255, 255, 0.09);
   --field-autofill: #132b46;
   --field-text: #ffffff;
+  /* Primary button: solid navy (the backdrop's sky) with white text, edged with a hairline
+     so it stands off the navy card. */
+  --button-bg: #1a3b5e;
+  --button-bg-hover: #234b74;
+  --button-fg: #ffffff;
+  --button-border: rgba(255, 255, 255, 0.2);
+  --button-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.7);
+  --button-shadow-hover: 0 14px 32px -12px rgba(0, 0, 0, 0.8);
 }
 
 html.dark div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
@@ -495,6 +495,13 @@ html:not(.dark) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[h
   --field-bg-hover: rgba(255, 255, 255, 0.75);
   --field-autofill: #eef5f7;
   --field-text: rgb(var(--text-primary));
+  /* Primary button: solid white with navy text, edged so it stands off the white card. */
+  --button-bg: #ffffff;
+  --button-bg-hover: #f1f5f9;
+  --button-fg: #1a3b5e;
+  --button-border: rgba(26, 59, 94, 0.2);
+  --button-shadow: 0 8px 20px -12px rgba(26, 59, 94, 0.45);
+  --button-shadow-hover: 0 12px 26px -12px rgba(26, 59, 94, 0.55);
   --accent-primary: 8 127 152;
   --accent-primary-hover: 7 95 115;
   color-scheme: light;
