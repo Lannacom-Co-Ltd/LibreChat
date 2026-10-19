@@ -1,0 +1,9 @@
+fastmcp>=3.4,<4
+weasyprint>=66,<67
+boto3>=1.40,<2
+uvicorn>=0.35
+matplotlib>=3.11,<4
+pillow>=11
+pypdfium2>=4.30
+lxml>=5
+markdown-it-py>=3,<5

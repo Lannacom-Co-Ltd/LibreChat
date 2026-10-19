@@ -1,0 +1,10 @@
+# Office Files on the dev machine: docker-compose.office.yml plus the store's port for the browser,
+# so download links (OFFICE_PUBLIC_URL=http://localhost:9000 in the local office.env) open locally.
+# Servers do not use this file; their reverse proxy serves /office-docs/ instead.
+#
+#   docker compose -p librechat-office -f docker-compose.office.yml -f docker-compose.office.dev.yml \
+#     --env-file office.env up -d --build
+services:
+  office-net:
+    ports:
+      - "127.0.0.1:9000:9000"

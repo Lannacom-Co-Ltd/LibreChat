@@ -1,0 +1,53 @@
+# Word templates that become tools of their own (mounted at /app/config in office-docs).
+# Placeholders live in office/templates/cmubs_memo.docx, built by office/build-templates.py.
+templates:
+  - name: cmubs_memo
+    description: >-
+      Create an official Thai internal memo (บันทึกข้อความ) of CMU Business School in the
+      standard government memo layout. Use it whenever the user asks for บันทึกข้อความ,
+      หนังสือภายใน or an internal memo. Write every field in Thai unless the user asks
+      otherwise. Pass file_name in English (letters, digits, hyphens, underscores).
+    docx_path: cmubs_memo.docx
+    annotations:
+      title: CMUBS Memo (บันทึกข้อความ)
+    args:
+      - name: department
+        type: string
+        description: ส่วนงานเจ้าของเรื่อง พร้อมโทรศัพท์ถ้ามี เช่น "งานบริการการศึกษา คณะบริหารธุรกิจ โทร. 0 5394 2100"
+        required: true
+      - name: doc_number
+        type: string
+        description: เลขที่หนังสือ เช่น "อว 8393(3)/123" ถ้าไม่ทราบให้เว้นว่าง
+        required: false
+        default: ""
+      - name: date
+        type: string
+        description: วันที่แบบไทย เช่น "8 ตุลาคม 2569"
+        required: true
+      - name: subject
+        type: string
+        description: เรื่อง (สั้น กระชับ)
+        required: true
+      - name: to
+        type: string
+        description: เรียนใคร เช่น "คณบดีคณะบริหารธุรกิจ"
+        required: true
+      - name: body
+        type: string
+        description: >-
+          เนื้อความทั้งหมดเป็นภาษาราชการ แยกย่อหน้าด้วยบรรทัดว่าง (รองรับ Markdown เช่น
+          รายการและตาราง) ปิดท้ายด้วยย่อหน้า "จึงเรียนมาเพื่อโปรดพิจารณา" หรือข้อความที่เหมาะสม
+        required: true
+      - name: signer_name
+        type: string
+        description: ชื่อ-สกุลผู้ลงนาม (ไม่ต้องใส่วงเล็บ)
+        required: true
+      - name: signer_position
+        type: string
+        description: ตำแหน่งผู้ลงนาม
+        required: true
+      - name: file_name
+        type: string
+        description: File name in English (letters, digits, hyphens, underscores), e.g. memo_ai_training
+        required: false
+        default: ""

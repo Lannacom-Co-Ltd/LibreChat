@@ -1,0 +1,40 @@
+<!-- CMUBS email wrapper for create_email_draft (Mustache, from the server's default_email_template.html).
+     Table layout and inline-safe CSS so Outlook and Gmail show the header bar; text only, no images,
+     because mail clients block images and data: URIs. Sarabun when the reader has it, else Tahoma. -->
+<!DOCTYPE html>
+<html lang="{{language}}">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Language" content="{{language}}" />
+    <title>{{subject}}</title>
+    <style>
+        body { font-family: Sarabun, Tahoma, 'Leelawadee UI', Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.5; margin: 0; padding: 0; }
+        h2 { font-weight: bold; font-size: 12pt; color: #145e6e; margin: 12px 0 6px; }
+        h3 { font-weight: bold; font-size: 11pt; color: #145e6e; margin: 10px 0 4px; }
+        p { margin: 8px 0; }
+        ul, ol { margin: 8px 0; padding-left: 22px; }
+        li { margin: 3px 0; }
+        a { color: #145e6e; }
+        table.content td, table.content th { border: 1px solid #b8c4c8; padding: 4px 8px; }
+    </style>
+</head>
+<body lang="{{language}}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
+    <tr>
+        <td style="background: #145e6e; padding: 10px 16px; font-family: Sarabun, Tahoma, Arial, sans-serif; font-size: 13pt; font-weight: bold; color: #ffffff;">
+            CMU Business School
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 12px 16px;">
+{{{content}}}
+        </td>
+    </tr>
+    <tr>
+        <td style="border-top: 2px solid #145e6e; padding: 8px 16px; font-family: Sarabun, Tahoma, Arial, sans-serif; font-size: 9pt; color: #666666;">
+            คณะบริหารธุรกิจ มหาวิทยาลัยเชียงใหม่ · Chiang Mai University Business School
+        </td>
+    </tr>
+</table>
+</body>
+</html>

@@ -763,3 +763,134 @@ html[data-greeting='7']:lang(th) div:has(> div.size-10):not(:has(.lucide-hat-gla
     animation: none;
   }
 }
+
+a[href*="/office-docs/"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  max-width: 100%;
+  margin: 0.2em 0;
+  padding: 0.45em 0.9em 0.45em 0.5em;
+  border: 1px solid rgba(20, 94, 110, 0.3);
+  border-radius: 0.65em;
+  background: rgba(20, 94, 110, 0.07);
+  color: #145e6e;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none !important;
+  overflow-wrap: anywhere;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+a[href*="/office-docs/"]:hover {
+  background: rgba(20, 94, 110, 0.14);
+  border-color: rgba(20, 94, 110, 0.55);
+}
+
+a[href*="/office-docs/"]::before {
+  content: "FILE";
+  flex: none;
+  padding: 0.2em 0.45em;
+  border-radius: 0.35em;
+  background: #145e6e;
+  color: #fff;
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+a[href*="/office-docs/"]::after {
+  content: "↓";
+  flex: none;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+a[href*="/office-docs/"][href$=".docx"]::before,
+a[href*="/office-docs/"][href*=".docx?"]::before {
+  content: "DOCX";
+  background: #2b579a;
+}
+
+a[href*="/office-docs/"][href$=".xlsx"]::before,
+a[href*="/office-docs/"][href*=".xlsx?"]::before {
+  content: "XLSX";
+  background: #217346;
+}
+
+a[href*="/office-docs/"][href$=".csv"]::before,
+a[href*="/office-docs/"][href*=".csv?"]::before {
+  content: "CSV";
+  background: #217346;
+}
+
+a[href*="/office-docs/"][href$=".pptx"]::before,
+a[href*="/office-docs/"][href*=".pptx?"]::before {
+  content: "PPTX";
+  background: #c43e1c;
+}
+
+a[href*="/office-docs/"][href$=".pdf"]::before,
+a[href*="/office-docs/"][href*=".pdf?"]::before {
+  content: "PDF";
+  background: #b30b00;
+}
+
+a[href*="/office-docs/"][href$=".png"]::before,
+a[href*="/office-docs/"][href*=".png?"]::before {
+  content: "PNG";
+  background: #145e6e;
+}
+
+a[href*="/office-docs/"][href$=".eml"]::before,
+a[href*="/office-docs/"][href*=".eml?"]::before {
+  content: "EML";
+  background: #8a4fa3;
+}
+
+a[href*="/office-docs/"][href$=".txt"]::before,
+a[href*="/office-docs/"][href*=".txt?"]::before {
+  content: "TXT";
+  background: #5f6b6d;
+}
+
+a[href*="/office-docs/"][href$=".md"]::before,
+a[href*="/office-docs/"][href*=".md?"]::before {
+  content: "MD";
+  background: #5f6b6d;
+}
+
+a[href*="/office-docs/"][href$=".json"]::before,
+a[href*="/office-docs/"][href*=".json?"]::before {
+  content: "JSON";
+  background: #5f6b6d;
+}
+
+a[href*="/office-docs/"][href$=".html"]::before,
+a[href*="/office-docs/"][href*=".html?"]::before {
+  content: "HTML";
+  background: #5f6b6d;
+}
+
+a[href*="/office-docs/"][href$=".xml"]::before,
+a[href*="/office-docs/"][href*=".xml?"]::before {
+  content: "XML";
+  background: #5f6b6d;
+}
+
+html.dark a[href*="/office-docs/"] {
+  border-color: rgba(159, 211, 220, 0.3);
+  background: rgba(159, 211, 220, 0.08);
+  color: #9fd3dc;
+}
+
+html.dark a[href*="/office-docs/"]:hover {
+  border-color: rgba(159, 211, 220, 0.55);
+  background: rgba(159, 211, 220, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a[href*="/office-docs/"] {
+    transition: none;
+  }
+}

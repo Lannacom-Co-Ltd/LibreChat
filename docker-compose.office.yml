@@ -1,0 +1,115 @@
+# ═══════════════════════════════════════════════════════════════
+#  Office files MCP (Word / Excel / PowerPoint / PDF / text) — Lannacom
+#  แยกเป็น compose project ของตัวเอง ไม่แตะ compose ของ LibreChat เข้า network ของมัน (LIBRECHAT_NETWORK)
+#  ขั้นตอนติดตั้งบน server ใหม่: DEPLOY.md
+#  รันด้วย: sudo docker compose -p cmu-office -f docker-compose.office.yml --env-file office.env up -d
+#
+#  LibreChat เรียก http://office-docs:8959/mcp (mcpServers.office-files ใน librechat.yaml)
+#    office-files (office/files) PDF, ไฟล์ข้อความ, กราฟ, แผนภาพ และส่งต่อ Word/Excel/PowerPoint ไปที่ office-docs
+#    office-docs                https://github.com/ForLegalAI/mcp-ms-office-documents
+#    office-storage             RustFS (S3) เก็บไฟล์ ลิงก์สั้น https://<โดเมน>/office-docs/<token>/<ชื่อ> (อ่านได้อย่างเดียว)
+#  Caddy ส่ง /office-docs/* มาที่ office-docs:9000
+#
+#  ทั้งสามตัวใช้ network ของ office-net ร่วมกัน (เรียกกันทาง localhost) office-net ไม่ทำอะไรนอกจาก
+#  ถือ network ไว้ ตัวอื่น restart ได้โดยไม่หลุด network กัน
+# ═══════════════════════════════════════════════════════════════
+services:
+  office-net:
+    image: registry.k8s.io/pause:3.10
+    container_name: cmu-office-net
+    restart: always
+    networks:
+      default:
+        aliases: [office-docs]
+
+  office-files:
+    build:
+      context: ./office
+      dockerfile: files/Dockerfile
+    image: cmubs/office-files:latest
+    container_name: cmu-office-files
+    restart: always
+    network_mode: service:office-net
+    depends_on: [office-net, office-storage]
+    environment:
+      API_KEY: ${OFFICE_DOCS_API_KEY}
+      OFFICE_DOCS_URL: http://localhost:8958/mcp
+      S3_ENDPOINT: http://localhost:9000
+      S3_PUBLIC_URL: ${OFFICE_PUBLIC_URL}
+      S3_ACCESS_KEY: ${OFFICE_STORAGE_USER}
+      S3_SECRET_KEY: ${OFFICE_STORAGE_PASSWORD}
+      S3_BUCKET: office-docs
+      SIGNED_URL_EXPIRES_IN: ${OFFICE_LINK_TTL:-86400}
+      FILE_TTL_HOURS: ${OFFICE_FILE_TTL_HOURS:-24}
+      PREVIEW_IMAGES: ${OFFICE_PREVIEW_IMAGES:-false}
+      # File kinds the chat can create: on (default) or off. See office/files/features.py.
+      OFFICE_WORD: ${OFFICE_WORD:-on}
+      OFFICE_EXCEL: ${OFFICE_EXCEL:-on}
+      OFFICE_POWERPOINT: ${OFFICE_POWERPOINT:-on}
+      OFFICE_PDF: ${OFFICE_PDF:-on}
+      OFFICE_TXT: ${OFFICE_TXT:-on}
+      OFFICE_MD: ${OFFICE_MD:-on}
+      OFFICE_CSV: ${OFFICE_CSV:-on}
+      OFFICE_JSON: ${OFFICE_JSON:-on}
+      OFFICE_HTML: ${OFFICE_HTML:-on}
+      OFFICE_EMAIL: ${OFFICE_EMAIL:-on}
+      OFFICE_XML: ${OFFICE_XML:-on}
+      OFFICE_MEMO: ${OFFICE_MEMO:-on}
+      OFFICE_CHART: ${OFFICE_CHART:-on}
+      OFFICE_DIAGRAM: ${OFFICE_DIAGRAM:-on}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8959), 3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  office-docs:
+    image: georgx22/mcp-office-docs@sha256:9c26e1944104ed01d870abae94665e4e5398ee74d50d33c33ba4622db534b38a
+    container_name: cmu-office-docs
+    restart: always
+    network_mode: service:office-net
+    depends_on: [office-net]
+    volumes:
+      - ./office/templates:/app/custom_templates:ro
+      - ./office/config:/app/config:ro
+      - ./office/overlay/sitecustomize.py:/opt/venv/lib/python3.12/site-packages/sitecustomize.py:ro
+    environment:
+      API_KEY: ${OFFICE_DOCS_API_KEY}
+      UPLOAD_STRATEGY: MINIO
+      MINIO_ENDPOINT: ${OFFICE_PUBLIC_URL}
+      MINIO_ACCESS_KEY: ${OFFICE_STORAGE_USER}
+      MINIO_SECRET_KEY: ${OFFICE_STORAGE_PASSWORD}
+      MINIO_BUCKET: office-docs
+      EMAIL_DEFAULT_LANGUAGE: th-TH
+      SIGNED_URL_EXPIRES_IN: ${OFFICE_LINK_TTL:-86400}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8958), 3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  office-storage:
+    image: rustfs/rustfs:1.0.1
+    container_name: cmu-office-storage
+    restart: always
+    network_mode: service:office-net
+    depends_on: [office-net]
+    environment:
+      RUSTFS_ACCESS_KEY: ${OFFICE_STORAGE_USER}
+      RUSTFS_SECRET_KEY: ${OFFICE_STORAGE_PASSWORD}
+    volumes:
+      - office-storage:/data
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  default:
+    # The network of the LibreChat compose project: <project name>_default (docker network ls).
+    name: ${LIBRECHAT_NETWORK:-cmu_default}
+    external: true
+
+volumes:
+  office-storage:
