@@ -1,5 +1,5 @@
 /*
- * CMUBS AI Hub: English is the default interface language.
+ * AI Hub: English is the default interface language.
  *
  * LibreChat picks its language from the `lang` cookie, then localStorage `lang`, then the
  * browser language. Choosing a language in Settings sets that cookie, so a visitor without

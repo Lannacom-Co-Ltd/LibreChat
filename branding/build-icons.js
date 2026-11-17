@@ -1,99 +1,58 @@
 /**
- * Builds the site logo and icons from branding/cmubs-logo.png into branding/icons/.
- *   logo-light.png / logo-dark.png  the full CMUBS logo, trimmed; the dark variant lifts the
- *                                   grey "Chiang Mai University Business School" line so it
- *                                   stays legible on the black login backdrop
- *   logo.svg                        the light logo wrapped for LibreChat's assets/logo.svg path
- *   favicons and app icons          the dot mark alone (the wordmark is unreadable at 16px):
- *                                   transparent for browser tabs, white-backed where the OS
- *                                   needs an opaque tile; favicon.ico for the admin panel
- *   sso-dark.png / sso-light.png    the "CMU" wordmark from branding/cmu-logo.webp for the
- *                                   "Continue with CMU IT Account" button, without the
- *                                   "CHIANG MAI UNIVERSITY" line (unreadable at icon size):
- *                                   white letters for the dark theme, deep teal for the light one,
- *                                   the orange 1 kept in both
+ * Builds the site logo and icons from branding/mark.svg (the green circle and orange square)
+ * into branding/icons/.
+ *   logo.svg                 the mark, for LibreChat's assets/logo.svg path
+ *   favicons and app icons   the mark on a transparent tile for browser tabs, on the warm
+ *                            off-white page colour where the OS needs an opaque tile;
+ *                            favicon.ico for the admin panel
  * docker-compose.override.yml mounts these over LibreChat's own files, so no LibreChat code
- * or image changes. Re-run after replacing the source logo:
+ * or image changes. Re-run after changing the mark:
  *   node branding/build-icons.js
- * A larger (1024px+) or SVG source gives sharper results on high-DPI screens.
  */
 const fs = require('fs');
 const path = require('path');
 const sharp = require(require.resolve('sharp', { paths: [path.join(__dirname, '..', 'api')] }));
 
-const SOURCE = path.join(__dirname, 'cmubs-logo.png');
+const SOURCE = path.join(__dirname, 'mark.svg');
 const OUT = path.join(__dirname, 'icons');
-const CMU_LOGO = path.join(__dirname, 'cmu-logo.webp');
-/** Shown about 18px tall; 4x covers high-DPI screens. */
-const SSO_ICON_HEIGHT = 72;
-/** The white letters on the light theme's white button: the button's deep teal text colour. */
-const SSO_LETTERS_ON_LIGHT = [20, 94, 110];
-
-/** Region of the source holding the dot mark (left of the "CMU" wordmark, above the wave). */
-const MARK_REGION = { left: 40, top: 105, width: 160, height: 223 };
-
-/** Greys darker than this, and nearly unsaturated, are the subtitle text. */
-const SUBTITLE_MAX_LUMA = 140;
-const SUBTITLE_MAX_CHROMA = 24;
-const SUBTITLE_ON_DARK = [228, 226, 236];
+/** Opaque tiles use the light theme's page colour. */
+const TILE = '#faf9f5';
+/** Rendered large once, then scaled down, so small sizes stay crisp. */
+const RENDER_WIDTH = 1040;
 
 /* Tab icons are transparent so they take on the browser's own light or dark tab colour. */
 const ICONS = [
-  { file: 'favicon-16x16.png', size: 16, shape: 'none', fill: 1 },
-  { file: 'favicon-32x32.png', size: 32, shape: 'none', fill: 0.96 },
-  { file: 'icon-192x192.png', size: 192, shape: 'none', fill: 0.9 },
-  /* iOS rounds the corners itself and shows transparency as black, so use a full square. */
-  { file: 'apple-touch-icon-180x180.png', size: 180, shape: 'square', fill: 0.66 },
+  { file: 'favicon-16x16.png', size: 16, opaque: false, fill: 1 },
+  { file: 'favicon-32x32.png', size: 32, opaque: false, fill: 0.96 },
+  { file: 'icon-192x192.png', size: 192, opaque: false, fill: 0.86 },
+  /* iOS rounds the corners itself and shows transparency as black, so use a full tile. */
+  { file: 'apple-touch-icon-180x180.png', size: 180, opaque: true, fill: 0.64 },
   /* Maskable icons are cropped by the OS; keep the mark inside the 80% safe zone. */
-  { file: 'maskable-icon.png', size: 512, shape: 'square', fill: 0.56 },
+  { file: 'maskable-icon.png', size: 512, opaque: true, fill: 0.56 },
 ];
 
-const trimmedLogo = () => sharp(SOURCE).trim({ threshold: 10 }).png().toBuffer();
+/** Sizes packed into favicon.ico, used by the admin panel. */
+const ICO_SIZES = [16, 24, 32, 48, 64];
 
-async function darkLogo(light) {
-  const { data, info } = await sharp(light).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  for (let i = 0; i < data.length; i += 4) {
-    const [r, g, b, a] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
-    if (a === 0) {
-      continue;
-    }
-    const luma = 0.299 * r + 0.587 * g + 0.114 * b;
-    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-    if (luma < SUBTITLE_MAX_LUMA && chroma < SUBTITLE_MAX_CHROMA) {
-      [data[i], data[i + 1], data[i + 2]] = SUBTITLE_ON_DARK;
-    }
-  }
-  return sharp(data, { raw: info }).png().toBuffer();
-}
+const transparent = { r: 0, g: 0, b: 0, alpha: 0 };
 
-async function icon(mark, { file, size, shape, fill }) {
+async function icon(mark, { file, size, opaque, fill }) {
   const inner = Math.round(size * fill);
-  const glyph = await sharp(mark)
-    .resize(inner, inner, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-    .toBuffer();
-  const backgrounds = {
-    none: '',
-    circle: `<circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" fill="#ffffff"/>`,
-    square: `<rect width="${size}" height="${size}" fill="#ffffff"/>`,
-  };
-  const badge = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">${backgrounds[shape]}</svg>`;
-  await sharp(Buffer.from(badge))
+  const glyph = await sharp(mark).resize(inner, inner, { fit: 'contain', background: transparent }).toBuffer();
+  const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">${
+    opaque ? `<rect width="${size}" height="${size}" fill="${TILE}"/>` : ''
+  }</svg>`;
+  await sharp(Buffer.from(tile))
     .composite([{ input: glyph, gravity: 'center' }])
     .png()
     .toFile(path.join(OUT, file));
 }
 
-/** Sizes packed into favicon.ico, used by the admin panel. */
-const ICO_SIZES = [16, 24, 32, 48, 64];
-
 /** Builds a multi-size .ico: an ICONDIR header, one entry per size, then PNG payloads. */
 async function faviconIco(mark) {
   const images = await Promise.all(
     ICO_SIZES.map((size) =>
-      sharp(mark)
-        .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .png()
-        .toBuffer(),
+      sharp(mark).resize(size, size, { fit: 'contain', background: transparent }).png().toBuffer(),
     ),
   );
   const header = Buffer.alloc(6 + 16 * images.length);
@@ -115,72 +74,17 @@ async function faviconIco(mark) {
   return Buffer.concat([header, ...images]);
 }
 
-/** The "CMU" letters: everything above the first fully transparent row under them. */
-async function cmuWordmark() {
-  const logo = await sharp(CMU_LOGO).trim({ threshold: 10 }).png().toBuffer();
-  const { data, info } = await sharp(logo).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  const rowIsEmpty = (y) => {
-    for (let x = 0; x < info.width; x++) {
-      if (data[(y * info.width + x) * 4 + 3] > 8) {
-        return false;
-      }
-    }
-    return true;
-  };
-  let gap = 0;
-  while (gap < info.height && !rowIsEmpty(gap)) {
-    gap++;
-  }
-  const letters = await sharp(logo).extract({ left: 0, top: 0, width: info.width, height: gap }).png().toBuffer();
-  return sharp(letters).trim({ threshold: 10 }).resize({ height: SSO_ICON_HEIGHT }).png().toBuffer();
-}
-
-/** Recolours the white letters, leaving the orange 1 and the edge alpha as they are. */
-async function recolourLetters(png, rgb) {
-  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  for (let i = 0; i < data.length; i += 4) {
-    const chroma = Math.max(data[i], data[i + 1], data[i + 2]) - Math.min(data[i], data[i + 1], data[i + 2]);
-    if (chroma < 40) {
-      [data[i], data[i + 1], data[i + 2]] = rgb;
-    }
-  }
-  return sharp(data, { raw: info }).png().toBuffer();
-}
-
-function logoSvg(png, { width, height }) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"><image width="${width}" height="${height}" href="data:image/png;base64,${png.toString('base64')}"/></svg>\n`;
-}
-
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
-  const light = await trimmedLogo();
-  const dark = await darkLogo(light);
-  const size = await sharp(light).metadata();
-  /* sharp trims before it extracts within one pipeline, so crop first, then trim. */
-  const region = await sharp(SOURCE).extract(MARK_REGION).png().toBuffer();
-  const mark = await sharp(region).trim({ threshold: 10 }).png().toBuffer();
+  const svg = fs.readFileSync(SOURCE);
+  const mark = await sharp(svg, { density: Math.round((72 * RENDER_WIDTH) / 208) }).png().toBuffer();
 
-  fs.writeFileSync(path.join(OUT, 'logo-light.png'), light);
-  fs.writeFileSync(path.join(OUT, 'logo-dark.png'), dark);
-  fs.writeFileSync(path.join(OUT, 'logo.svg'), logoSvg(light, size));
-  fs.writeFileSync(path.join(OUT, 'mark.png'), mark);
+  fs.writeFileSync(path.join(OUT, 'logo.svg'), svg);
   await Promise.all(ICONS.map((spec) => icon(mark, spec)));
   fs.writeFileSync(path.join(OUT, 'favicon.ico'), await faviconIco(mark));
-  const wordmark = await cmuWordmark();
-  fs.writeFileSync(path.join(OUT, 'sso-dark.png'), wordmark);
-  fs.writeFileSync(path.join(OUT, 'sso-light.png'), await recolourLetters(wordmark, SSO_LETTERS_ON_LIGHT));
 
-  const written = [
-    'logo-light.png',
-    'logo-dark.png',
-    'logo.svg',
-    'mark.png',
-    'favicon.ico',
-    'sso-dark.png',
-    'sso-light.png',
-    ...ICONS.map((i) => i.file),
-  ];
-  console.log(`icons written to ${OUT} (logo ${size.width}x${size.height}): ${written.join(', ')}`);
+  const written = ['logo.svg', 'favicon.ico', ...ICONS.map((i) => i.file)];
+  console.log(`icons written to ${OUT}: ${written.join(', ')}`);
 })().catch((error) => {
   console.error(error);
   process.exit(1);

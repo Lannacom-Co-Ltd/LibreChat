@@ -3,7 +3,7 @@
  * row, and exposes it as <html data-greeting> for space.css. */
 (function () {
   var COUNT = 8;
-  var KEY = 'cmubs-greeting';
+  var KEY = 'aihub-greeting';
   var pick = Math.floor(Math.random() * COUNT);
   try {
     var last = sessionStorage.getItem(KEY);

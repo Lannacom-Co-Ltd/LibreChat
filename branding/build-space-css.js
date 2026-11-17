@@ -1,10 +1,13 @@
 /**
- * Generates branding/space.css: the CMUBS look for the LibreChat login page.
- *   Dark theme  -> backdrops/dark.jpg, the campus skyline in white line art on navy.
- *   Light theme -> backdrops/light.jpg, the same skyline in teal on light grey.
- * The skyline stays on the bottom edge of the screen and the plain sky above it is filled
- * with the image's own colour, so any screen shape shows the whole skyline without cropping
- * it or stretching it. Pure CSS, injected at container start — see
+ * Generates branding/space.css: the AI Hub look for the LibreChat login page, plus the
+ * new-chat greeting and the file-download buttons in chat.
+ *
+ * Login page, wide screens: a split screen. The left half is a panel drawn by login.js (the
+ * mark, the headline and a sample chat that cycles through examples); the right half is
+ * LibreChat's own sign-in form, restyled. Narrow screens: the mark and the form only.
+ * Warm neutral surfaces (off-white / warm charcoal) with the mark's orange as the accent.
+ *
+ * Pure CSS over LibreChat's markup, injected at container start — see
  * docker-compose.override.yml. After editing:
  *   node branding/build-space-css.js
  * then bump ?v= in docker-compose.override.yml and recreate the api container.
@@ -12,434 +15,293 @@
 const fs = require('fs');
 const path = require('path');
 
-const LOGO_VERSION = 3;
-/**
- * Login page typeface: Montserrat, as on the CMUBS website. A variable font covering weights
- * 300-700 for Latin text, served from branding/fonts (SIL Open Font License, fonts/OFL.txt).
- * It has no Thai glyphs, so Thai text falls back to the system's Thai font as before. Bump
- * FONT_VERSION after replacing the file.
- */
+/** Bump after changing the mark (mark.svg / icons). */
+const LOGO_VERSION = 4;
+/** Bump after replacing a font file. */
 const FONT_VERSION = 1;
-/**
- * Login heading and tagline per interface language (LibreChat keeps <html lang> in step
- * with it). Languages not listed show the first entry. The form's own labels, button and
- * errors come from LibreChat's translations, so they already follow the chosen language.
- * Proper names (CMUBS AI Hub) stay as they are in every language.
- */
-const LOGIN_TITLES = [
-  { lang: 'en', text: 'Welcome to CMUBS AI Hub' },
-  { lang: 'th', text: 'ยินดีต้อนรับสู่ CMUBS AI Hub' },
-];
-/**
- * Wording tweaks to LibreChat's own translations on the login form, per language. Each
- * entry replaces the element's text visually (screen readers still read the original).
- */
-const LOGIN_TEXT_OVERRIDES = [
-  { lang: 'en', selector: "label[for='email']", text: 'Email' },
-  { lang: 'th', selector: "label[for='email']", text: 'อีเมล' },
-];
-const LOGIN_TAGLINES = [
-  {
-    lang: 'en',
-    text: 'The nationally leading business school committed to incubating innovative entrepreneurship, and social responsibility for sustainable development',
-  },
-  {
-    lang: 'th',
-    text: 'สถาบันการศึกษาด้านบริหารธุรกิจชั้นนำของประเทศ ที่มุ่งบ่มเพาะความเป็นผู้ประกอบการเชิงนวัตกรรมและจิตสำนึกต่อสังคม เพื่อการพัฒนาที่ยั่งยืน',
-  },
-];
-/**
- * Login backdrops: 2000x1125 images whose top half is plain sky (sky) and whose skyline
- * ends in a thin ground line (ground). Bump BACKDROP_VERSION after replacing an image.
- */
-const BACKDROP_VERSION = 1;
-const BACKDROPS = {
-  dark: { image: 'backdrops/dark.jpg', sky: '#1a3b5e', ground: 'rgba(218, 227, 244, 0.9)' },
-  light: { image: 'backdrops/light.jpg', sky: '#e8e8e8', ground: '#34899d' },
-};
+/** Product name shown beside the mark on narrow screens (login.js shows it on wide ones). */
+const PRODUCT_NAME = 'AI Hub';
+/** Wide enough for the split screen; below this the panel is hidden. */
+const SPLIT_MIN_WIDTH = 960;
 
-/** Sky colour, the skyline on the bottom edge, and the ground line carried to both edges. */
-const backdrop = ({ image, sky, ground }) =>
-  `linear-gradient(${ground}, ${ground}) center bottom / 100% 1px no-repeat,
-    url('${image}?v=${BACKDROP_VERSION}') center bottom / var(--backdrop-w) auto no-repeat,
-    ${sky}`;
+/**
+ * Inter (text) and Fraunces (headings), variable fonts, Latin only, served from
+ * branding/fonts (SIL Open Font License, fonts/OFL-*.txt). Thai has no glyphs in either, so it
+ * falls back to the system's Thai font.
+ */
+const SANS = "'AIHub Inter', 'Leelawadee UI', 'Noto Sans Thai', system-ui, sans-serif";
+const SERIF = "'AIHub Fraunces', Georgia, 'Leelawadee UI', 'Noto Serif Thai', serif";
+
+/** Theme colours. LibreChat's own tokens take space-separated RGB; the rest are CSS colours. */
+const THEMES = {
+  light: {
+    page: '#faf9f5',
+    panel: '#f0eee6',
+    text: '#141413',
+    muted: '#73726c',
+    line: 'rgba(20, 20, 19, 0.09)',
+    line2: 'rgba(20, 20, 19, 0.15)',
+    field: '#ffffff',
+    accent: '#e04a1f',
+    accentRing: 'rgba(240, 80, 35, 0.16)',
+    buttonBg: '#141413',
+    buttonFg: '#faf9f5',
+    buttonHover: '#2b2a27',
+    shadow: '0 30px 70px -32px rgba(20, 20, 19, 0.28)',
+    rgb: { textPrimary: '20 20 19', textSecondary: '115 114 108', surface: '250 249 245', borderLight: '226 224 216', borderMedium: '204 201 192' },
+  },
+  dark: {
+    page: '#262624',
+    panel: '#1f1e1d',
+    text: '#faf9f5',
+    muted: '#a6a39b',
+    line: 'rgba(250, 249, 245, 0.08)',
+    line2: 'rgba(250, 249, 245, 0.14)',
+    field: '#30302e',
+    accent: '#f26a3f',
+    accentRing: 'rgba(240, 80, 35, 0.24)',
+    buttonBg: '#faf9f5',
+    buttonFg: '#1f1e1d',
+    buttonHover: '#e9e7e0',
+    shadow: '0 30px 70px -30px rgba(0, 0, 0, 0.6)',
+    rgb: { textPrimary: '250 249 245', textSecondary: '166 163 155', surface: '38 38 36', borderLight: '62 62 58', borderMedium: '84 83 78' },
+  },
+};
 
 /* The login screen is the auth page that renders the login form, or, when email login is
    off (ALLOW_EMAIL_LOGIN=false), SSO buttons and no other form. The registration page also
    shows SSO buttons but always has its own form, so it is left out, as are password reset
    and 2FA. `:has()` scopes every rule this way without touching LibreChat's markup.
-   LibreChat puts `dark` or `light` on <html>, which picks the theme. */
+   LibreChat puts `dark` on <html> for the dark theme. */
 const AUTH =
   'div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form)))';
-const LOGO = `${AUTH} div:has(> img[src="assets/logo.svg"])`;
+const LOGO_BOX = `${AUTH} > div:has(> img[src="assets/logo.svg"])`;
 const CARD = `${AUTH} > main > div`;
 const BUTTON = `${AUTH} [data-testid="login-button"]`;
-const FIELD = `${AUTH} form .webkit-dark-styles`;
-const DARK = `html.dark ${AUTH}`;
-const DARK_LOGO = `html.dark ${LOGO}`;
-const LIGHT = `html:not(.dark) ${AUTH}`;
-const LIGHT_LOGO = `html:not(.dark) ${LOGO}`;
-/** The theme / contrast toggles, bottom left: the only element that carries `absolute bottom-0`. */
+const FIELD = `${AUTH} form input:is([type='text'], [type='email'], [type='password'])`;
+const OAUTH = `${CARD} a[href*='/oauth/']`;
 const THEMEBAR = `${AUTH} > div.absolute.bottom-0`;
+/** The panel login.js adds to <body>; html.aihub-login is set while the login screen shows. */
+const PANEL = '#aihub-panel';
 
-/** Per-language `content` (and optional font-size) overrides for a pseudo-element. */
-const localized = (pseudo, entries) =>
-  entries
-    .slice(1)
-    .map(({ lang, text, fontSize }) => {
-      const size = fontSize ? `\n  font-size: ${fontSize};` : '';
-      return `html:lang(${lang}) ${pseudo} {\n  content: '${text}';${size}\n}`;
-    })
-    .join('\n\n');
+const tokens = (t) => `
+  --ah-page: ${t.page};
+  --ah-panel: ${t.panel};
+  --ah-text: ${t.text};
+  --ah-muted: ${t.muted};
+  --ah-line: ${t.line};
+  --ah-line2: ${t.line2};
+  --ah-field: ${t.field};
+  --ah-accent: ${t.accent};
+  --ah-accent-ring: ${t.accentRing};
+  --ah-button-bg: ${t.buttonBg};
+  --ah-button-fg: ${t.buttonFg};
+  --ah-button-hover: ${t.buttonHover};
+  --ah-shadow: ${t.shadow};`;
 
-/** Swaps an element's text for the override at the login form's 14px/20px scale. */
-const textOverrides = LOGIN_TEXT_OVERRIDES.map(({ lang, selector, text }) => {
-  const target = `html:lang(${lang}) ${AUTH} ${selector}`;
-  return `${target} {\n  font-size: 0;\n}\n\n${target}::after {\n  content: '${text}';\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}`;
-}).join('\n\n');
+/* LibreChat's own tokens, so the form's text, borders and floating labels follow the theme. */
+const librechatTokens = ({ rgb }) => `
+  --text-primary: ${rgb.textPrimary};
+  --text-secondary: ${rgb.textSecondary};
+  --text-secondary-alt: ${rgb.textSecondary};
+  --text-tertiary: ${rgb.textSecondary};
+  --surface-primary: ${rgb.surface};
+  --border-light: ${rgb.borderLight};
+  --border-medium: ${rgb.borderMedium};`;
 
 const css = `/* Generated by branding/build-space-css.js — edit that file, not this one. */
 
-/* ================================ Shared ================================ */
+/* ================================ Fonts ================================ */
 
 @font-face {
-  font-family: 'Montserrat';
+  font-family: 'AIHub Inter';
   font-style: normal;
-  font-weight: 300 700;
+  font-weight: 100 900;
   font-display: swap;
-  src: url('fonts/montserrat.woff2?v=${FONT_VERSION}') format('woff2');
+  src: url('fonts/inter.woff2?v=${FONT_VERSION}') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Every element on the login page, including form controls, which don't inherit fonts. */
+@font-face {
+  font-family: 'AIHub Fraunces';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/fraunces.woff2?v=${FONT_VERSION}') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'AIHub Fraunces';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/fraunces-italic.woff2?v=${FONT_VERSION}') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ================================ Theme ================================ */
+
+html:not(.dark) ${AUTH},
+html:not(.dark) ${PANEL} {${tokens(THEMES.light)}
+}
+
+html.dark ${AUTH},
+html.dark ${PANEL} {${tokens(THEMES.dark)}
+}
+
+html:not(.dark) ${AUTH} {${librechatTokens(THEMES.light)}
+  color-scheme: light;
+}
+
+html.dark ${AUTH} {${librechatTokens(THEMES.dark)}
+  color-scheme: dark;
+}
+
+/* The mark replaces LibreChat's logo everywhere it appears. LibreChat serves assets/logo.svg
+   with a two-day browser cache, so the swap goes through a versioned URL. */
+img[src="assets/logo.svg"] {
+  content: url('mark.svg?v=${LOGO_VERSION}');
+}
+
+/* ============================ Login: right side ============================ */
+
 ${AUTH},
 ${AUTH} * {
-  font-family: 'Montserrat', sans-serif;
+  font-family: ${SANS};
 }
 
-/* Layout: the logo and tagline sit at the top and the card sits in the exact centre of the
-   screen, as long as everything fits. The page is a flex column of
-   [logo + tagline, grows][error][card][theme toggles, grows]: the two growing blocks start
-   from zero and share the spare height equally, which centres the card. Neither can shrink
-   below its own content, so on a short screen or with a taller card (SSO buttons) the logo
-   block keeps its height and pushes the card down just enough instead of overlapping it,
-   and the toggles in the bottom corner can never sit on top of the card. When everything is
-   taller than the screen, the page scrolls. */
+/* LibreChat sizes this page with min-h-screen (100vh); on iPhone that is taller than the
+   visible area with Safari's toolbar showing, so the page could be dragged. 100svh fits. */
 ${AUTH} {
-  --logo-h: clamp(72px, 12vh, 132px);
-  --stack-gap: clamp(20px, 4.5vh, 48px);
-  --page-pad-y: clamp(20px, 4vh, 48px);
-  isolation: isolate;
-  overflow-x: clip;
-  padding: var(--page-pad-y) 16px;
-  /* LibreChat sizes this page with min-h-screen (100vh). On iPhone, 100vh is the height with
-     Safari's toolbar hidden, so with the toolbar showing the page ends up taller than the
-     screen and can be dragged up and down. 100svh is the visible height with the toolbar
-     showing: the page fits exactly and only scrolls when the content truly needs it. */
   min-height: 100vh;
   min-height: 100svh;
-  /* Backdrop width: the full screen width, but never so wide that the skyline (the lower
-     46% of the image) climbs past about half the screen height on a short or ultrawide
-     screen, and at least 900px so a phone shows the hall and clock tower at a readable size
-     rather than a thin strip. Where it is narrower than the screen, the sky colour and
-     ground line carry on to the edges. */
-  --backdrop-w: max(900px, min(100%, 192vh));
+  background: var(--ah-page);
+  color: var(--ah-text);
+  overflow-x: clip;
 }
 
-${AUTH} > div:has(img[src="assets/logo.svg"]) {
-  order: 1;
-  flex: 1 1 0;
-  justify-content: flex-start;
+/* LibreChat's screen-reader live regions (one under the page, one under the theme toggles)
+   sit 1px past the bottom of the screen and add a scroll; pinning them to the top of their
+   box keeps them readable without it. */
+html.aihub-login #root > .sr-only,
+${THEMEBAR} .sr-only {
+  top: 0;
 }
 
-${AUTH} > div.mx-auto {
-  order: 2;
-  flex: 0 0 auto;
-  margin-bottom: 12px;
+/* Privacy policy / terms links: not shown on this login page. */
+${AUTH} > [role='contentinfo'] {
+  display: none;
+}
+
+/* The mark and product name, top left (narrow screens; the panel carries them when wide). */
+${LOGO_BOX} {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: auto;
+  margin: 0;
+  padding: 28px 24px 0;
+}
+
+${LOGO_BOX} img {
+  width: auto;
+  height: 22px;
+  flex: none;
+}
+
+${LOGO_BOX}::after {
+  content: '${PRODUCT_NAME}';
+  font-family: ${SERIF};
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ah-text);
 }
 
 ${AUTH} > main {
-  order: 3;
-  flex: 0 0 auto;
+  padding: 32px 24px 48px;
 }
 
-/* The theme / contrast toggles become the growing bottom block, pinned to its bottom-left.
-   In LibreChat's markup they come before the card, so 'order' moves them to the end. */
-${THEMEBAR} {
-  order: 4;
-  position: static;
-  flex: 1 1 0;
-  display: flex;
-  align-items: flex-end;
-  margin: 0 0 calc(16px - var(--page-pad-y));
-  /* Mirrors the logo block's gap below it (the toggles sit 16px from the bottom edge rather
-     than inside the page padding), so the two grow blocks match and the card centres. */
-  padding-top: calc(var(--stack-gap) + var(--page-pad-y) - 16px);
-}
-
-@media (max-height: 760px) {
-  ${AUTH} {
-    --logo-h: clamp(56px, 10vh, 84px);
-    --stack-gap: clamp(16px, 3vh, 28px);
-    --page-pad-y: clamp(16px, 3vh, 28px);
-  }
-}
-
-@media (max-height: 620px) {
-  ${AUTH} {
-    --logo-h: 52px;
-    --stack-gap: 12px;
-  }
-}
-
-/* LibreChat serves assets/logo.svg with a two-day browser cache, so a browser that saw the
-   old logo keeps it. Swapping the image through a versioned URL here takes effect on the
-   next page load everywhere the logo appears. Bump LOGO_VERSION after changing the logo. */
-img[src="assets/logo.svg"] {
-  content: url('icons/logo-light.png?v=${LOGO_VERSION}');
-}
-
-html.dark img[src="assets/logo.svg"] {
-  content: url('icons/logo-dark.png?v=${LOGO_VERSION}');
-}
-
-/* Logo with a soft halo, then the tagline, stacked above the card. */
-${LOGO} {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: auto;
-  margin: 0 0 var(--stack-gap);
-}
-
-${LOGO} img {
-  height: var(--logo-h);
-  width: auto;
-  max-width: 88vw;
-  object-fit: contain;
-}
-
-${LOGO}::after {
-  content: '${LOGIN_TAGLINES[0].text}';
-  display: block;
-  width: min(620px, 100%);
-  margin-top: clamp(6px, 1.2vh, 14px);
-  font-size: clamp(0.72rem, 1.05vw, 0.875rem);
-  line-height: 1.5;
-  letter-spacing: 0.01em;
-  text-align: center;
-  text-wrap: balance;
-}
-
-${localized(`${LOGO}::after`, LOGIN_TAGLINES)}
-
-@media (max-height: 620px) {
-  ${LOGO}::after {
-    font-size: 0.7rem;
-    line-height: 1.4;
-  }
-}
-
-/* The footer (privacy / terms links) floats at the bottom rather than joining the stack. */
-${AUTH} > [role='contentinfo'] {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-/* Card proportions. LibreChat's card is a fixed 370px with uneven spacing (16px top and
-   bottom padding, a 40px gap under the title, 48px of stacked margins under "OR"). One
-   rhythm here, tightened further on short screens so the card with SSO buttons still
-   fits without scrolling down to 560px of height. */
+/* The card: no box, just the form on the page. */
 ${CARD} {
-  --card-pad-y: clamp(20px, 3vh, 28px);
-  --card-pad-x: clamp(18px, 5vw, 28px);
-  --card-gap: clamp(14px, 2vh, 20px);
-  --field-gap: 14px;
-  --button-h: 42px;
-  width: min(370px, 100%);
-  padding: var(--card-pad-y) var(--card-pad-x);
+  width: min(380px, 100%);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 ${CARD} > h1 {
-  margin-bottom: 0;
+  margin-bottom: 28px;
+  font-family: ${SERIF};
+  font-size: clamp(30px, 2.4vw, 36px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-align: left;
+  color: var(--ah-text);
 }
 
 ${CARD} > form {
-  margin-top: var(--card-gap);
+  margin-top: 0;
 }
 
 ${CARD} > form > div:first-child {
-  margin-bottom: var(--field-gap);
+  margin-bottom: 16px;
 }
 
 ${CARD} > form > div:has(> [data-testid='login-button']) {
-  margin-top: var(--card-gap);
+  margin-top: 22px;
 }
 
-${BUTTON} {
-  height: var(--button-h);
-}
-
-${CARD} .border-t:has(> .absolute) {
-  margin-top: var(--card-gap);
-}
-
-${CARD} .border-t:has(> .absolute) + div {
-  margin-top: var(--card-gap);
-}
-
-${CARD} .border-t:has(> .absolute) + div + div,
-${CARD} .border-t:has(> .absolute) + div + div > div:first-child {
-  margin-top: 0;
-}
-
-/* SSO-only login (ALLOW_EMAIL_LOGIN=false): the buttons follow the title directly. */
-${CARD}:not(:has(.border-t > .absolute)) > h1 ~ div.mt-2:has(a[href*='/oauth/']) {
-  margin-top: var(--card-gap);
-}
-
-${CARD}:not(:has(.border-t > .absolute)) > h1 ~ div.mt-2:has(a[href*='/oauth/']) > div:first-child {
-  margin-top: 0;
-}
-
-/* With no email form, the SSO button is the only way in, so it takes the primary look. */
-${CARD}:not(:has(form)) a[href*='/oauth/'] {
-  justify-content: center;
-  min-height: var(--button-h);
-  border: 1px solid var(--button-border);
-  color: var(--button-fg);
-  font-weight: 500;
-  background: var(--button-bg);
-  box-shadow: var(--button-shadow);
-  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
-  background: var(--button-bg-hover);
-  border-color: var(--button-border-hover);
-  box-shadow: var(--button-shadow-hover);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ${CARD}:not(:has(form)) a[href*='/oauth/'],
-  ${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
-    transition: none;
-    transform: none;
-  }
-}
-
-
-/* Phones (portrait): a narrower, lighter card with room around it, so the logo, tagline
-   and card read as three calm blocks rather than one crowded column. */
-@media (max-width: 480px) {
-  ${AUTH} {
-    --logo-h: clamp(60px, 9vh, 88px);
-    --stack-gap: clamp(22px, 4.5vh, 40px);
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-
-  ${LOGO}::after {
-    width: min(320px, 100%);
-    font-size: 0.75rem;
-  }
-
-  ${CARD} {
-    --card-pad-y: 20px;
-    --card-pad-x: 20px;
-    --card-gap: 14px;
-    --field-gap: 12px;
-    --button-h: 42px;
-    width: min(340px, 100%);
-    border-radius: 18px;
-  }
-
-  ${CARD} > h1::after {
-    line-height: 1.9rem;
-  }
-
-  ${FIELD},
-  ${FIELD}:focus {
-    padding-top: 1.3rem;
-    padding-bottom: 0.3rem;
-  }
-}
-
-/* Short screens (including short phones): tighter card spacing. */
-@media (max-height: 700px) {
-  ${CARD} {
-    --card-pad-y: 16px;
-    --card-pad-x: 22px;
-    --card-gap: 12px;
-    --field-gap: 10px;
-    --button-h: 40px;
-  }
-
-  ${FIELD},
-  ${FIELD}:focus {
-    padding-top: 1.3rem;
-    padding-bottom: 0.3rem;
-  }
-}
-
-/* Landscape phones and very short windows: drop the tagline, keep the logo small. */
-@media (max-height: 520px) {
-  ${AUTH} {
-    --logo-h: 40px;
-    --stack-gap: 16px;
-  }
-
-  ${LOGO}::after {
-    display: none;
-  }
-}
-
-/* Custom heading. LibreChat has no setting for the login title, so the original text is
-   collapsed and replaced visually (screen readers still announce the original). */
-${CARD} > h1 {
-  font-size: 0;
-  line-height: 0;
-}
-
-/* The heading sizes to the card: both titles set about 13.9 times their font size wide in
-   Montserrat, so 7% of the card's inner width keeps them on one line at any card width. */
-${CARD} {
-  container-type: inline-size;
-}
-
-${CARD} > h1::after {
-  content: '${LOGIN_TITLES[0].text}';
-  display: block;
-  font-size: min(1.5rem, 7cqi);
-  line-height: 2.25rem;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-
-${localized(`${CARD} > h1::after`, LOGIN_TITLES)}
-
-${textOverrides}
-
-/* Glass fields. LibreChat paints them with a hard-coded inset colour (.webkit-dark-styles
-   in client/src/style.css) and gives the floating label a solid background, both of which
-   read as opaque boxes on the glass card. Here the fill is translucent and the floated
-   label rests inside the field's top edge rather than on its border, so it needs no
-   background. Autofill keeps an opaque tint because Chrome paints its own over it. */
+/* Fields: hairline border on the page colour, with LibreChat's floating label sitting in a
+   notch of the top border (its background is --surface-primary, the page colour). */
 ${FIELD},
 ${FIELD}:focus {
-  background: var(--field-bg);
-  background-clip: padding-box;
+  height: 48px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border: 1px solid var(--ah-line2);
+  border-radius: 10px;
+  background: rgb(var(--surface-primary));
   -webkit-box-shadow: none;
   box-shadow: none;
-  -webkit-text-fill-color: var(--field-text);
-  padding-top: 1.45rem;
-  padding-bottom: 0.4rem;
+  -webkit-text-fill-color: var(--ah-text);
+  color: var(--ah-text);
+  font-size: 15px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* iOS Safari zooms the page in when a field under 16px gets focus, and leaves it zoomed.
-   16px on touch devices stops that without disabling pinch-zoom for people who need it. */
+${FIELD}:hover {
+  border-color: rgb(var(--border-medium));
+}
+
+${FIELD}:focus,
+${FIELD}:focus-visible {
+  border-color: var(--ah-accent);
+  box-shadow: 0 0 0 3px var(--ah-accent-ring);
+  outline: none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+${FIELD}:-webkit-autofill,
+${FIELD}:-webkit-autofill:hover,
+${FIELD}:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 50vh rgb(var(--surface-primary)) inset;
+  -webkit-text-fill-color: var(--ah-text);
+}
+
+${AUTH} form label {
+  color: var(--ah-muted);
+}
+
+${AUTH} form input:focus ~ label {
+  color: var(--ah-accent);
+}
+
+/* iOS Safari zooms in on fields under 16px; 16px on touch devices stops that. */
 @media (hover: none) and (pointer: coarse) {
   ${FIELD},
   ${FIELD}:focus {
@@ -447,249 +309,365 @@ ${FIELD}:focus {
   }
 }
 
-${FIELD}:-webkit-autofill,
-${FIELD}:-webkit-autofill:hover,
-${FIELD}:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 50vh var(--field-autofill) inset;
-  -webkit-text-fill-color: var(--field-text);
+/* Links on the form (forgot password, sign up) take the accent. */
+${CARD} a:not([href*='/oauth/']) {
+  color: var(--ah-accent);
 }
 
-${AUTH} form label {
-  background: transparent;
-}
-
-/* [for][class] lifts specificity above Tailwind's peer-focus:top-1.5 / -translate-y-4. */
-${AUTH} form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class] {
-  top: 0.3rem;
-  --tw-translate-y: 0px;
-}
-
-${AUTH} form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class],
-${AUTH} form input:is(:focus, :not(:placeholder-shown)) ~ label[for][class]::after {
-  line-height: 1rem;
-}
-
-/* "OR" divider above the SSO buttons: LibreChat draws a full border and masks it with a
-   solid label background, which shows as a dark chip on the glass. Instead the line fades
-   in from the edges and leaves a gap for the label. */
-${CARD} .border-t:has(> .absolute) {
+${BUTTON} {
+  height: 48px;
   border: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgb(var(--border-medium)) 22%, rgb(var(--border-medium)) 40%, transparent 40%, transparent 60%, rgb(var(--border-medium)) 60%, rgb(var(--border-medium)) 78%, transparent 100%);
+  border-radius: 10px;
+  background: var(--ah-button-bg);
+  color: var(--ah-button-fg);
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: none;
+  transition: background-color 0.15s ease;
+}
+
+${BUTTON}:hover {
+  background: var(--ah-button-hover);
+}
+
+/* "OR" divider above the SSO buttons. */
+${CARD} .border-t:has(> .absolute) {
+  margin-top: 26px;
+  border-color: var(--ah-line);
 }
 
 ${CARD} .border-t:has(> .absolute) > .absolute {
-  background: transparent;
-  color: rgb(var(--text-secondary));
+  color: var(--ah-muted);
+  font-size: 12px;
   letter-spacing: 0.08em;
 }
 
-/* SSO buttons (Continue with OpenID, etc.) match the glass fields, at the same slim height
-   as the Continue button: min-height sets it and the label centres vertically. */
-${CARD} a[href*='/oauth/'] {
-  min-height: var(--button-h);
+${CARD} .border-t:has(> .absolute) + div {
+  margin-top: 26px;
+}
+
+${CARD} .border-t:has(> .absolute) + div + div,
+${CARD} .border-t:has(> .absolute) + div + div > div:first-child {
+  margin-top: 0;
+}
+
+/* SSO buttons: outlined, same height as the fields. */
+${OAUTH} {
+  justify-content: center;
+  min-height: 48px;
   padding-top: 0;
   padding-bottom: 0;
-  background: var(--field-bg);
-  border-color: rgb(var(--border-light));
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  border: 1px solid var(--ah-line2);
+  border-radius: 10px;
+  background: var(--ah-field);
+  color: var(--ah-text);
+  font-weight: 500;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-${CARD} a[href*='/oauth/']:hover {
-  background: var(--field-bg-hover);
+${OAUTH}:hover {
   border-color: rgb(var(--border-medium));
+  background: var(--ah-page);
 }
 
-/* The CMU wordmark in place of LibreChat's default OpenID glyph on the SSO button (the
-   sign-in is a CMU IT account): white letters on the dark theme's navy button, deep teal on
-   the light theme's white one. The glyph's path is hidden and the wordmark is painted as the
-   icon's background, sized to its 242:72 proportions, so the button's layout is untouched.
-   An OPENID_IMAGE_URL set in .env renders an <img> instead and is left as it is. */
+/* The default OpenID glyph becomes a plain padlock. An OPENID_IMAGE_URL set in .env renders
+   an <img> instead and is left as it is. */
 ${AUTH} svg#openid {
-  --sso-icon-h: 0.875rem;
   flex: none;
-  width: calc(var(--sso-icon-h) * 242 / 72);
-  height: var(--sso-icon-h);
-  background: url('icons/sso-light.png?v=${LOGO_VERSION}') center / contain no-repeat;
-}
-
-${DARK} svg#openid {
-  background-image: url('icons/sso-dark.png?v=${LOGO_VERSION}');
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='10' rx='2.5'/%3E%3Cpath d='M7 11V8a5 5 0 0 1 10 0v3'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='10' rx='2.5'/%3E%3Cpath d='M7 11V8a5 5 0 0 1 10 0v3'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 ${AUTH} svg#openid > path {
   display: none;
 }
 
-/* The wordmark is wider than the glyph it replaces, so the button trims its side padding and
-   icon gap, and the label sits a size down with slightly tighter tracking, to keep "Continue
-   with CMU IT Account" on one line down to 360px screens; below that it wraps rather than
-   overflowing. */
-${CARD} a[href*='/oauth/']:has(> svg#openid) {
-  padding-left: 1rem;
-  padding-right: 1rem;
+/* SSO-only login (ALLOW_EMAIL_LOGIN=false): the buttons follow the heading directly, and
+   the SSO button, the only way in, takes the primary look. */
+${CARD}:not(:has(form)) > h1 ~ div:has(a[href*='/oauth/']),
+${CARD}:not(:has(form)) > h1 ~ div:has(a[href*='/oauth/']) > div:first-child {
+  margin-top: 0;
 }
 
-${CARD} a[href*='/oauth/']:has(> svg#openid) > svg#openid + * {
-  margin-left: 0.625rem;
-  font-size: 0.84375rem;
+${CARD}:not(:has(form)) a[href*='/oauth/'] {
+  border-color: transparent;
+  background: var(--ah-button-bg);
+  color: var(--ah-button-fg);
   font-weight: 600;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
 }
 
-/* Keyboard focus: a ring set 2px off the button, in the theme's text colour (deep teal on
-   light, white on dark) rather than the browser's default black. */
+${CARD}:not(:has(form)) a[href*='/oauth/']:hover {
+  background: var(--ah-button-hover);
+}
+
 ${CARD} a[href*='/oauth/']:focus-visible,
 ${BUTTON}:focus-visible {
-  outline: 2px solid var(--focus-ring);
+  outline: 2px solid var(--ah-accent);
   outline-offset: 2px;
 }
 
-@media (max-width: 379px) {
-  ${AUTH} {
-    padding-left: 16px;
-    padding-right: 16px;
+/* Theme / contrast toggles: kept in the bottom-left corner of the form side. */
+${THEMEBAR} {
+  margin: 0;
+}
+
+/* ============================ Login: left panel ============================ */
+
+${PANEL} {
+  display: none;
+}
+
+@media (min-width: ${SPLIT_MIN_WIDTH}px) {
+  html.aihub-login ${PANEL} {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 50%;
+    padding: 104px clamp(40px, 7vw, 112px) 48px;
+    border-right: 1px solid var(--ah-line);
+    background: var(--ah-panel);
+    color: var(--ah-text);
+    font-family: ${SANS};
+    overflow: hidden;
   }
 
-  ${AUTH} svg#openid {
-    --sso-icon-h: 0.75rem;
+  html.aihub-login ${AUTH} {
+    margin-left: 50%;
+    width: 50%;
   }
 
-  ${CARD} a[href*='/oauth/']:has(> svg#openid) {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
-
-  ${CARD} a[href*='/oauth/']:has(> svg#openid) > svg#openid + * {
-    margin-left: 0.5rem;
-    font-size: 0.8125rem;
+  /* The panel shows the mark; the form side drops its copy. */
+  html.aihub-login ${LOGO_BOX} {
+    visibility: hidden;
   }
 }
 
-@media (max-width: 359px) {
-  ${CARD} a[href*='/oauth/']:has(> svg#openid) > svg#openid + * {
-    white-space: normal;
-    text-align: left;
-  }
+${PANEL} .ah-brand {
+  position: absolute;
+  top: 44px;
+  left: clamp(40px, 7vw, 112px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: ${SERIF};
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
-/* Surfaces step up in lightness, page -> card -> buttons and fields, so each layer reads
-   at a glance in either theme; the card is a flat panel with a hairline edge, blurred just
-   enough to quiet the line art behind it. */
-${CARD} {
-  border: 1px solid var(--card-border);
-  border-radius: 24px;
-  background: var(--card-bg);
-  box-shadow: var(--card-shadow);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  backdrop-filter: blur(18px) saturate(140%);
+${PANEL} .ah-brand img {
+  width: auto;
+  height: 24px;
 }
 
-${BUTTON} {
-  border: 1px solid var(--button-border);
-  color: var(--button-fg);
-  background: var(--button-bg);
-  box-shadow: var(--button-shadow);
-  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+${PANEL} .ah-body {
+  width: 100%;
+  max-width: 500px;
 }
 
-${BUTTON}:hover {
-  background: var(--button-bg-hover);
-  border-color: var(--button-border-hover);
-  box-shadow: var(--button-shadow-hover);
+${PANEL} h2 {
+  margin: 0;
+  font-family: ${SERIF};
+  font-size: clamp(36px, min(4.2vw, 7vh), 64px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
 }
 
-/* ============================ Dark: navy skyline ============================ */
-
-${DARK} {
-  /* Dark theme tokens (client/src/style.css .dark) keep the form legible on navy. */
-  --text-primary: var(--gray-100);
-  --text-secondary: var(--gray-300);
-  --text-secondary-alt: var(--gray-400);
-  --text-tertiary: var(--gray-400);
-  --surface-primary: var(--gray-900);
-  --border-light: 52 72 102;
-  --border-medium: 80 104 138;
-  --accent-primary: 94 196 216;
-  --accent-primary-hover: 140 216 230;
-  color-scheme: dark;
-  background: ${backdrop(BACKDROPS.dark)};
+${PANEL} h2 em {
+  font-style: italic;
+  color: var(--ah-accent);
 }
 
-${DARK_LOGO}::after {
-  /* Same colour as the "Chiang Mai University Business School" line in logo-dark.png. */
-  color: #e4e2ec;
-  text-shadow: 0 1px 12px rgba(6, 18, 34, 0.8);
+/* Sample chat: a card that cycles through examples (login.js). Fixed height, so the layout
+   never jumps between examples. */
+${PANEL} .ah-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: clamp(24px, 4.5vh, 44px);
+  padding: 22px 22px 14px;
+  border: 1px solid var(--ah-line);
+  border-radius: 20px;
+  background: var(--ah-page);
+  box-shadow: var(--ah-shadow);
+  font-size: 14px;
+  line-height: 1.55;
 }
 
-${DARK_LOGO} img {
-  filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.12)) drop-shadow(0 10px 24px rgba(6, 18, 34, 0.6));
+${PANEL} .ah-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 178px;
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
-/* Dark: page #1a3b5e (the backdrop's sky) -> card one step lighter -> buttons and fields
-   another step lighter, with white text. */
-${DARK} {
-  --card-bg: rgba(34, 71, 109, 0.9);
-  --card-border: rgba(255, 255, 255, 0.12);
-  --card-shadow: 0 24px 60px -28px rgba(6, 18, 34, 0.6);
-  --field-bg: rgba(255, 255, 255, 0.08);
-  --field-bg-hover: rgba(255, 255, 255, 0.12);
-  --field-autofill: #2c5279;
-  --field-text: #ffffff;
-  --button-bg: #2f5781;
-  --button-bg-hover: #3a6390;
-  --button-fg: #ffffff;
-  --button-border: rgba(255, 255, 255, 0.08);
-  --button-border-hover: rgba(255, 255, 255, 0.16);
-  --button-shadow: none;
-  --button-shadow-hover: none;
-  --focus-ring: #ffffff;
+${PANEL} .ah-thread.ah-out {
+  opacity: 0;
+  transform: translateY(6px);
 }
 
-/* ========================== Light: teal skyline ========================== */
-
-${LIGHT} {
-  /* Light: page #e8e8e8 (the backdrop's sky) -> card a step lighter -> buttons and fields
-     white. Text, hairlines and shadows take a deep teal drawn from the backdrop's line art
-     (#34899d), so the card reads as part of the same drawing. */
-  --text-primary: 20 60 70;
-  --card-bg: rgba(247, 247, 247, 0.92);
-  --card-border: rgba(20, 94, 110, 0.14);
-  --card-shadow: 0 24px 60px -30px rgba(20, 94, 110, 0.28);
-  --field-bg: #ffffff;
-  --field-bg-hover: #ffffff;
-  --field-autofill: #ffffff;
-  --field-text: rgb(var(--text-primary));
-  --button-bg: #ffffff;
-  --button-bg-hover: #f5f9fa;
-  --button-fg: #145e6e;
-  --button-border: rgba(20, 94, 110, 0.22);
-  --button-border-hover: rgba(20, 94, 110, 0.4);
-  --button-shadow: 0 1px 2px rgba(20, 94, 110, 0.08);
-  --button-shadow-hover: 0 2px 6px rgba(20, 94, 110, 0.14);
-  --focus-ring: #145e6e;
-  --accent-primary: 20 94 110;
-  --accent-primary-hover: 14 72 85;
-  color-scheme: light;
-  background: ${backdrop(BACKDROPS.light)};
+${PANEL} .ah-q {
+  align-self: flex-end;
+  max-width: 78%;
+  padding: 10px 14px;
+  border: 1px solid var(--ah-line);
+  border-radius: 16px 16px 4px 16px;
+  background: var(--ah-field);
 }
 
-${LIGHT_LOGO}::after {
-  /* Same colour as the "Chiang Mai University Business School" line in the logo. */
-  color: #404042;
-  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.7);
+${PANEL} .ah-a {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--ah-text);
+  opacity: 0.88;
 }
 
-${LIGHT_LOGO} img {
-  filter: drop-shadow(0 10px 22px rgba(20, 94, 110, 0.14));
+${PANEL} .ah-a > img {
+  flex: none;
+  width: 24px;
+  height: auto;
+  margin-top: 4px;
+}
+
+${PANEL} .ah-a > div {
+  flex: 1;
+  min-width: 0;
+}
+
+${PANEL} .ah-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ah-line2);
+  border-radius: 12px;
+  background: var(--ah-field);
+  font-size: 13px;
+}
+
+${PANEL} .ah-file b {
+  padding: 5px 7px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+${PANEL} .ah-file small {
+  display: block;
+  color: var(--ah-muted);
+  font-size: 11.5px;
+}
+
+${PANEL} .ah-file i,
+${PANEL} .ah-send {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin-left: auto;
+  border-radius: 8px;
+}
+
+${PANEL} .ah-file i {
+  border: 1px solid var(--ah-line2);
+}
+
+${PANEL} svg {
+  width: 15px;
+  height: 15px;
+}
+
+${PANEL} .ah-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  height: 78px;
+  margin-top: 12px;
+  padding: 10px 12px 0;
+  border: 1px solid var(--ah-line2);
+  border-radius: 12px;
+  background: var(--ah-field);
+}
+
+${PANEL} .ah-bars i {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  background: var(--ah-line2);
+}
+
+${PANEL} .ah-bars i.ah-hi {
+  background: #f05023;
+}
+
+${PANEL} .ah-pts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+${PANEL} .ah-pts li {
+  position: relative;
+  padding-left: 16px;
+}
+
+${PANEL} .ah-pts li::before {
+  content: '';
+  position: absolute;
+  top: 0.62em;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: #1ab06c;
+}
+
+${PANEL} .ah-quote {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-left: 2px solid #1ab06c;
+  border-radius: 0 10px 10px 0;
+  background: var(--ah-field);
+}
+
+${PANEL} .ah-ask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px -22px 0;
+  padding: 12px 14px 0 22px;
+  border-top: 1px solid var(--ah-line);
+  color: var(--ah-muted);
+}
+
+${PANEL} .ah-send {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #f05023;
+  color: #fff;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  ${PANEL} .ah-thread,
+  ${FIELD},
   ${BUTTON},
-  ${BUTTON}:hover {
+  ${OAUTH} {
     transition: none;
-    transform: none;
   }
 }
 `;
@@ -755,7 +733,7 @@ const greetingJs = `/* Generated by branding/build-space-css.js — edit that fi
  * row, and exposes it as <html data-greeting> for space.css. */
 (function () {
   var COUNT = ${GREETINGS.length};
-  var KEY = 'cmubs-greeting';
+  var KEY = 'aihub-greeting';
   var pick = Math.floor(Math.random() * COUNT);
   try {
     var last = sessionStorage.getItem(KEY);
