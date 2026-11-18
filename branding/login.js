@@ -51,7 +51,7 @@
 
   var SIGNUPS = bars([34, 42, 39, 51, 58, 86, 74], 5);
 
-  /* The same six examples in each language; the translation example goes the other way. */
+  /* Six examples per language, each written entirely in that language. */
   var TEXT = {
     en: {
       headline: 'Start with<br>a <em>thought</em>.',
@@ -62,7 +62,7 @@
         { q: 'Draft a memo about the new leave policy', a: 'Here is a one-page memo, ready to send.', x: file('DOCX', '#3b6fd9', 'Leave-policy-memo.docx', '1 page · A4') },
         { q: 'Chart our monthly sign-ups', a: 'Sign-ups climbed steadily, with a jump in June.', x: SIGNUPS },
         { q: 'Summarise this 40-page PDF', a: 'Three things that matter most:', x: points(['Costs fall 12% after year two', 'Rollout takes six months', 'Main risk is staff training']) },
-        { q: 'แปลอีเมลนี้เป็นภาษาไทยให้หน่อย', a: 'ได้เลยครับ นี่คือฉบับภาษาไทย:', x: '<div class="ah-quote">เรียนทุกท่าน ขอแจ้งว่าการประชุมประจำเดือนจะเลื่อนเป็นวันศุกร์นี้ เวลา 10.00 น.</div>' },
+        { q: 'Reply to this customer email', a: 'Here’s a short, friendly reply:', x: '<div class="ah-quote">Thanks for flagging this — we’ve fixed the invoice and sent a corrected copy today.</div>' },
       ],
     },
     th: {
@@ -74,7 +74,7 @@
         { q: 'ช่วยร่างประกาศเรื่องระเบียบการลาใหม่', a: 'ร่างประกาศ 1 หน้าเสร็จแล้ว ส่งต่อได้เลยครับ', x: file('DOCX', '#3b6fd9', 'Leave-policy-memo.docx', '1 หน้า · A4') },
         { q: 'ทำกราฟยอดสมัครสมาชิกแต่ละเดือน', a: 'ยอดสมัครเพิ่มขึ้นเรื่อย ๆ และสูงสุดในเดือนมิถุนายน', x: SIGNUPS },
         { q: 'สรุป PDF 40 หน้านี้ให้หน่อย', a: 'สรุปสั้น ๆ 3 ข้อหลัก:', x: points(['ต้นทุนลดลง 12% ตั้งแต่ปีที่ 3', 'ใช้เวลาวางระบบ 6 เดือน', 'ความเสี่ยงหลักคือการอบรมพนักงาน']) },
-        { q: 'แปลอีเมลนี้เป็นภาษาอังกฤษให้หน่อย', a: 'ได้เลยครับ นี่คือฉบับภาษาอังกฤษ:', x: '<div class="ah-quote">Dear all, this month’s meeting has moved to Friday at 10:00.</div>' },
+        { q: 'ช่วยตอบอีเมลลูกค้าฉบับนี้หน่อย', a: 'นี่คือร่างคำตอบสั้น ๆ ครับ:', x: '<div class="ah-quote">ขอบคุณที่แจ้งให้ทราบ เราได้แก้ไขใบแจ้งหนี้และส่งฉบับที่ถูกต้องให้แล้ววันนี้</div>' },
       ],
     },
   };
