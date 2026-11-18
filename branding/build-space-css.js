@@ -469,8 +469,8 @@ ${THEMEBAR} {
 /* ========================= Login: narrow screens ========================= */
 
 /* Phones and small tablets follow the common sign-in layout (Linear, ChatGPT): a plain page,
-   everything in one centred column: the mark, one heading, the SSO button as the main way
-   in, then the email form. LibreChat's "Welcome back" is swapped for "Sign in to <name>"
+   everything in one centred column: the mark, one heading, the SSO button, then the email
+   form. Buttons keep the same styles as on wide screens. LibreChat's "Welcome back" is swapped for "Sign in to <name>"
    visually (screen readers still read the original). */
 @media (max-width: ${SPLIT_MIN_WIDTH - 1}px) {
   ${LOGO_BOX} {
@@ -512,31 +512,6 @@ ${THEMEBAR} {
   }
 
   ${localized(`${CARD} > h1::after`, MOBILE_TITLES)}
-
-  /* With SSO on the page it is the main way in: filled. The email form's Continue steps
-     back to an outline so there is one primary button. */
-  ${CARD} a[href*='/oauth/'] {
-    border-color: transparent;
-    background: var(--ah-button-bg);
-    color: var(--ah-button-fg);
-    font-weight: 600;
-  }
-
-  ${CARD} a[href*='/oauth/']:hover {
-    border-color: transparent;
-    background: var(--ah-button-hover);
-  }
-
-  ${CARD}:has(a[href*='/oauth/']) [data-testid='login-button'] {
-    border: 1px solid var(--ah-line2);
-    background: transparent;
-    color: var(--ah-text);
-  }
-
-  ${CARD}:has(a[href*='/oauth/']) [data-testid='login-button']:hover {
-    border-color: rgb(var(--border-medium));
-    background: var(--ah-field);
-  }
 }
 
 /* ============================ Login: left panel ============================ */
