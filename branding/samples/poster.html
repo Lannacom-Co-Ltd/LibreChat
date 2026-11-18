@@ -1,0 +1,78 @@
+<!doctype html>
+<!--
+  Source of the sample poster shown in the login page's chat examples (samples/poster-en.webp,
+  samples/poster-th.webp): a 1600x900 launch poster — coloured light in the mark's orange and
+  green, a tilted glass card, a serif headline and a giant outline word behind. ?lang=th draws
+  the Thai version. Rendered by branding/build-samples.js — edit this file, then run it.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: 'P Fraunces'; font-weight: 100 900; src: url('../fonts/fraunces.woff2') format('woff2'); }
+  @font-face { font-family: 'P Fraunces'; font-style: italic; font-weight: 100 900; src: url('../fonts/fraunces-italic.woff2') format('woff2'); }
+  @font-face { font-family: 'P Thai'; font-weight: 400; src: url('../fonts/plex-thai-400.woff2') format('woff2'); }
+  @font-face { font-family: 'P Thai'; font-weight: 600; src: url('../fonts/plex-thai-600.woff2') format('woff2'); }
+  @font-face { font-family: 'P Thai'; font-weight: 700; src: url('../fonts/plex-thai-700.woff2') format('woff2'); }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1600px; height: 900px; background: #000; }
+  .poster { position: relative; overflow: hidden; width: 1600px; height: 900px; background: #0d0b14; color: #fff;
+    font-family: 'Segoe UI', 'P Thai', sans-serif; }
+  .poster > * { position: absolute; }
+  .grain { inset: 0; pointer-events: none; opacity: .22; mix-blend-mode: overlay; }
+
+  /* coloured light */
+  .orb { border-radius: 50%; filter: blur(70px); }
+  .o1 { width: 760px; height: 760px; left: 640px; top: -260px; background: #f05023; opacity: .85; }
+  .o2 { width: 620px; height: 620px; left: 1060px; top: 330px; background: #1ab06c; opacity: .7; }
+  .o3 { width: 520px; height: 520px; left: 300px; top: 520px; background: #7a3cff; opacity: .55; }
+
+  /* giant outline word behind everything */
+  .big { left: -30px; bottom: -120px; font: 900 400px/1 'Segoe UI', sans-serif; letter-spacing: -0.06em; color: transparent;
+    -webkit-text-stroke: 3px rgba(255,255,255,.28); white-space: nowrap; }
+  .th .big { bottom: -150px; font: 700 380px/1 'P Thai', sans-serif; letter-spacing: 0; }
+
+  /* tilted glass card */
+  .stage { left: 900px; top: 120px; width: 520px; height: 660px; perspective: 1400px; }
+  .glass { position: absolute; inset: 0; border-radius: 48px; transform: rotateY(-22deg) rotateX(10deg) rotateZ(4deg);
+    background: linear-gradient(145deg, rgba(255,255,255,.34), rgba(255,255,255,.06)); border: 2px solid rgba(255,255,255,.45);
+    box-shadow: 0 60px 120px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.6); backdrop-filter: blur(24px); padding: 56px 48px; }
+  .glass .mk { width: 120px; height: 64px; background: url('../mark.svg') center/contain no-repeat; }
+  .glass .line { height: 18px; border-radius: 9px; background: rgba(255,255,255,.55); margin-top: 26px; }
+  .glass .line.s { width: 60%; background: rgba(255,255,255,.35); }
+  .glass .chip { margin-top: 60px; display: inline-flex; padding: 0 30px; height: 64px; border-radius: 32px; background: #fff; color: #111;
+    align-items: center; font: 700 26px 'Segoe UI', 'P Thai', sans-serif; }
+  .th .glass .chip { font-family: 'P Thai', sans-serif; font-weight: 600; }
+
+  /* copy */
+  .copy { left: 110px; top: 120px; }
+  .kick { font: 600 26px 'Segoe UI'; letter-spacing: .3em; text-transform: uppercase; color: rgba(255,255,255,.75); }
+  h1 { margin-top: 26px; font: 500 150px/0.92 'P Fraunces', serif; letter-spacing: -0.035em; }
+  h1 em { font-style: italic; background: linear-gradient(90deg, #ffb27a, #f05023); -webkit-background-clip: text; color: transparent; }
+  .th h1 { margin-top: 48px; font: 700 132px/1.16 'P Thai', sans-serif; letter-spacing: 0; }
+  .th h1 em { font-style: normal; }
+  .meta { margin-top: 34px; font: 400 36px 'Segoe UI', 'P Thai', sans-serif; color: rgba(255,255,255,.8); }
+  .th .meta { font-family: 'P Thai', sans-serif; }
+</style>
+</head>
+<body>
+<div class="poster" id="poster">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+  <div class="big" id="big"></div>
+  <div class="stage"><div class="glass"><div class="mk"></div><div class="line"></div><div class="line s"></div><div class="line"></div><div class="line s"></div><div class="chip" id="chip"></div></div></div>
+  <div class="copy"><div class="kick">Lannacom · 2027</div><h1 id="title"></h1><div class="meta" id="meta"></div></div>
+  <svg class="grain" width="1600" height="900"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+</div>
+<script>
+  const th = new URLSearchParams(location.search).get('lang') === 'th';
+  const t = th
+    ? { title: 'สิ่ง<em>ใหม่</em><br>กำลังจะมา', meta: '12 มกราคม · กรุงเทพฯ', chip: 'รับสิทธิ์ก่อนใคร', big: 'เปิดตัว' }
+    : { title: 'Something<br><em>new</em> is<br>coming.', meta: '12 January · Bangkok', chip: 'Get early access', big: 'LAUNCH' };
+  document.getElementById('poster').classList.toggle('th', th);
+  document.getElementById('title').innerHTML = t.title;
+  document.getElementById('meta').textContent = t.meta;
+  document.getElementById('chip').textContent = t.chip;
+  document.getElementById('big').textContent = t.big;
+</script>
+</body>
+</html>

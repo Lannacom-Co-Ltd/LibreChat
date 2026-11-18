@@ -599,12 +599,19 @@ html:lang(th) ${CARD} > h1 {
   line-height: 1.35;
 }
 
-/* Sample chat: a card that cycles through examples (login.js). Fixed height, so the layout
-   never jumps between examples. */
+/* Sample chat: a card that cycles through examples (login.js) and fits each one, gliding
+   between heights. It sits in a slot as tall as the tallest example, so the headline above
+   stays put while the card's bottom edge moves. */
+${PANEL} .ah-slot {
+  min-height: calc(clamp(24px, 4.5vh, 44px) + 340px);
+}
+
 ${PANEL} .ah-chat {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow: hidden;
+  transition: height 0.4s ease;
   margin-top: clamp(24px, 4.5vh, 44px);
   padding: 22px 22px 14px;
   border: 1px solid var(--ah-line);
@@ -619,7 +626,6 @@ ${PANEL} .ah-thread {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 236px;
   transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
@@ -670,6 +676,8 @@ ${PANEL} .ah-file {
 }
 
 ${PANEL} .ah-file b {
+  flex: none;
+  white-space: nowrap;
   padding: 5px 7px;
   border-radius: 6px;
   color: #fff;
@@ -758,7 +766,8 @@ ${PANEL} .ah-quote {
   background: var(--ah-field);
 }
 
-/* Image example: a sample portrait image (samples/artwork.webp) with its size underneath. */
+/* Image examples: a portrait picture (samples/artwork.webp) or a landscape poster
+   (samples/poster-*.webp, .ah-wide), with the file size underneath. */
 ${PANEL} .ah-image {
   margin-top: 12px;
 }
@@ -770,6 +779,11 @@ ${PANEL} .ah-image img {
   border-radius: 10px;
   object-fit: cover;
   box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.5);
+}
+
+${PANEL} .ah-image.ah-wide img {
+  width: 176px;
+  height: 99px;
 }
 
 ${PANEL} .ah-image > span {
@@ -799,6 +813,7 @@ ${PANEL} .ah-send {
 
 @media (prefers-reduced-motion: reduce) {
   ${PANEL} .ah-thread,
+  ${PANEL} .ah-chat,
   ${FIELD},
   ${BUTTON},
   ${OAUTH} {

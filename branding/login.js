@@ -20,6 +20,7 @@
   var PRODUCT = 'Lannacom AI Hub';
   var INTERVAL_MS = 6000;
   var FADE_MS = 450;
+  var RESIZE_MS = 400;
 
   var DOWNLOAD =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>';
@@ -53,9 +54,16 @@
 
   /* A sample generated image (branding/samples/artwork.html, rendered by build-samples.js). */
   var ARTWORK =
-    '<div class="ah-image"><img src="assets/custom/samples/artwork.webp?v=2" alt=""><span>PNG · 1024 × 1365</span></div>';
+    '<div class="ah-image"><img src="assets/custom/samples/artwork.webp?v=3" alt=""><span>PNG · 1024 × 1365</span></div>';
+  /* A sample poster (branding/samples/poster.html), in the interface language. */
+  function poster(lang) {
+    return (
+      '<div class="ah-image ah-wide"><img src="assets/custom/samples/poster-' + lang + '.webp?v=1" alt="">' +
+      '<span>PNG · 1600 × 900</span></div>'
+    );
+  }
 
-  /* Seven examples per language, each written entirely in that language. */
+  /* Eight examples per language, each written entirely in that language. */
   var TEXT = {
     en: {
       headline: 'Start with<br>a <em>thought</em>.',
@@ -66,6 +74,7 @@
         { q: 'Draft a memo about the new leave policy', a: 'Here is a one-page memo, ready to send.', x: file('DOCX', '#3b6fd9', 'Leave-policy-memo.docx', '1 page · A4') },
         { q: 'Chart our monthly sign-ups', a: 'Sign-ups climbed steadily, with a jump in June.', x: SIGNUPS },
         { q: 'Summarise this 40-page PDF', a: 'Three things that matter most:', x: points(['Costs fall 12% after year two', 'Rollout takes six months', 'Main risk is staff training']) },
+        { q: 'Design a poster for our product launch', a: 'Here’s a first draft — want a bolder version?', x: poster('en') },
         { q: 'Draw misty mountains for our report cover', a: 'Here’s one, with room at the top for a title.', x: ARTWORK },
         { q: 'Reply to this customer email', a: 'Here’s a short, friendly reply:', x: '<div class="ah-quote">Thanks for flagging this — we’ve fixed the invoice and sent a corrected copy today.</div>' },
       ],
@@ -79,6 +88,7 @@
         { q: 'ช่วยร่างประกาศเรื่องระเบียบการลาใหม่', a: 'ร่างประกาศ 1 หน้าเสร็จแล้ว ส่งต่อได้เลยครับ', x: file('DOCX', '#3b6fd9', 'Leave-policy-memo.docx', '1 หน้า · A4') },
         { q: 'ทำกราฟยอดสมัครสมาชิกแต่ละเดือน', a: 'ยอดสมัครเพิ่มขึ้นเรื่อย ๆ และสูงสุดในเดือนมิถุนายน', x: SIGNUPS },
         { q: 'สรุป PDF 40 หน้านี้ให้หน่อย', a: 'สรุปสั้น ๆ 3 ข้อหลัก:', x: points(['ต้นทุนลดลง 12% ตั้งแต่ปีที่ 3', 'ใช้เวลาวางระบบ 6 เดือน', 'ความเสี่ยงหลักคือการอบรมพนักงาน']) },
+        { q: 'ออกแบบโปสเตอร์เปิดตัวสินค้าให้หน่อย', a: 'นี่คือแบบร่างแรกครับ อยากได้โทนอื่นบอกได้เลย', x: poster('th') },
         { q: 'วาดภาพภูเขาในหมอกไว้ทำปกรายงาน', a: 'นี่ครับ เว้นที่ด้านบนไว้ใส่ชื่อรายงานแล้ว', x: ARTWORK },
         { q: 'ช่วยตอบอีเมลลูกค้าฉบับนี้หน่อย', a: 'นี่คือร่างคำตอบสั้น ๆ ครับ:', x: '<div class="ah-quote">ขอบคุณที่แจ้งให้ทราบ เราได้แก้ไขใบแจ้งหนี้และส่งฉบับที่ถูกต้องให้แล้ววันนี้</div>' },
       ],
@@ -130,6 +140,7 @@
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var panel;
   var thread;
+  var chat;
   var lang = null;
   var current = Math.floor(Math.random() * TEXT.en.scenes.length);
   var timer = null;
@@ -140,10 +151,31 @@
     panel.setAttribute('aria-hidden', 'true');
     panel.innerHTML =
       '<div class="ah-brand"><img src="' + MARK + '" alt="">' + PRODUCT + '</div>' +
-      '<div class="ah-body"><h2></h2><div class="ah-chat"><div class="ah-thread"></div>' +
-      '<div class="ah-ask"><span class="ah-ask-text"></span><span class="ah-send">' + SEND + '</span></div></div></div>';
+      '<div class="ah-body"><h2></h2><div class="ah-slot"><div class="ah-chat"><div class="ah-thread"></div>' +
+      '<div class="ah-ask"><span class="ah-ask-text"></span><span class="ah-send">' + SEND + '</span></div></div></div></div>';
     document.body.appendChild(panel);
     thread = panel.querySelector('.ah-thread');
+    chat = panel.querySelector('.ah-chat');
+  }
+
+  /*
+   * The card fits each example. When the example changes, its height glides from the old to
+   * the new size: pin the current height, swap the content, then animate to the new natural
+   * height and release it. The card sits in a slot as tall as the tallest example, so the
+   * headline above never moves.
+   */
+  function swap(html) {
+    var from = chat.offsetHeight;
+    chat.style.height = from + 'px';
+    thread.innerHTML = html;
+    chat.style.height = 'auto';
+    var to = chat.offsetHeight;
+    chat.style.height = from + 'px';
+    void chat.offsetHeight;
+    chat.style.height = to + 'px';
+    setTimeout(function () {
+      chat.style.height = '';
+    }, RESIZE_MS);
   }
 
   /* Writes the panel's text in the current interface language (only when it changed). */
@@ -169,7 +201,7 @@
     current = n >= current ? n + 1 : n;
     thread.classList.add('ah-out');
     setTimeout(function () {
-      thread.innerHTML = sceneHtml(TEXT[lang].scenes[current]);
+      swap(sceneHtml(TEXT[lang].scenes[current]));
       thread.classList.remove('ah-out');
     }, FADE_MS);
   }
