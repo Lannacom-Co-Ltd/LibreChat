@@ -1,5 +1,8 @@
 """On/off switches for each kind of file, set in office.env (OFFICE_WORD=off and so on).
 
+create_image also needs IMAGE_API_KEY, and the administrator tools (usage_report,
+manage_credits) need MONGO_URI; without them they stay off whatever the switch says.
+
 Every switch defaults to on, so a deployment without them behaves as before. A file kind that
 is off is left out of the tool list LibreChat reads (so the model neither sees nor pays for its
 description), out of the instructions, and is refused if called anyway; the model is told not
@@ -33,10 +36,23 @@ FEATURES = {
     "OFFICE_MEMO": ({"thai_memo"}, "thai_memo for an official Thai internal memo (บันทึกข้อความ)"),
     "OFFICE_CHART": ({"create_chart"}, "create_chart (a chart image)"),
     "OFFICE_DIAGRAM": ({"create_diagram"}, "create_diagram (a diagram image)"),
+    "OFFICE_IMAGE": ({"create_image"}, "create_image (an AI-made picture, illustration or poster; it can also edit a picture it made)"),
 }
+# Tools for administrators only; not file kinds, so not named in the instructions.
+ADMIN_FEATURES = {"OFFICE_ADMIN": {"usage_report", "manage_credits"}}
 
-ENABLED = [switch for switch in FEATURES if is_on(switch)]
+# These need a key or a database as well as their switch.
+NEEDS = {"OFFICE_IMAGE": "IMAGE_API_KEY", "OFFICE_ADMIN": "MONGO_URI"}
+
+
+def available(switch: str) -> bool:
+    return is_on(switch) and (switch not in NEEDS or bool(os.environ.get(NEEDS[switch])))
+
+
+ENABLED = [switch for switch in FEATURES if available(switch)]
+ADMIN_TOOLS = {tool for switch, tools in ADMIN_FEATURES.items() if available(switch) for tool in tools}
 DISABLED_TOOLS = {tool for switch, (tools, _) in FEATURES.items() if switch not in ENABLED for tool in tools}
+DISABLED_TOOLS |= {tool for tools in ADMIN_FEATURES.values() for tool in tools} - ADMIN_TOOLS
 if not TEXT_TYPES:
     DISABLED_TOOLS.add("create_text_file")
 
@@ -45,7 +61,11 @@ def instructions() -> str:
     kinds = [FEATURES[switch][1] for switch in ENABLED]
     if TEXT_TYPES:
         kinds.append(f"create_text_file ({', '.join('.' + ext for ext in TEXT_TYPES)})")
-    images = [name for switch, name in (("OFFICE_CHART", "create_chart"), ("OFFICE_DIAGRAM", "create_diagram")) if switch in ENABLED]
+    images = [
+        name
+        for switch, name in (("OFFICE_CHART", "create_chart"), ("OFFICE_DIAGRAM", "create_diagram"), ("OFFICE_IMAGE", "create_image"))
+        if switch in ENABLED
+    ]
     documents = [name for switch, name in (("OFFICE_WORD", "Word"), ("OFFICE_PDF", "PDF"), ("OFFICE_POWERPOINT", "PowerPoint")) if switch in ENABLED]
     embedding = (
         f"For a chart or diagram inside a {', '.join(documents)} document, call {' or '.join(images)} "

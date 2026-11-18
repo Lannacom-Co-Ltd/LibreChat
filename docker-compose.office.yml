@@ -57,6 +57,15 @@ services:
       OFFICE_MEMO: ${OFFICE_MEMO:-on}
       OFFICE_CHART: ${OFFICE_CHART:-on}
       OFFICE_DIAGRAM: ${OFFICE_DIAGRAM:-on}
+      OFFICE_IMAGE: ${OFFICE_IMAGE:-on}
+      OFFICE_ADMIN: ${OFFICE_ADMIN:-on}
+      # AI pictures (create_image): off until a key is set. OpenRouter image API, see office/files/images.py.
+      IMAGE_API_KEY: ${OFFICE_IMAGE_API_KEY:-}
+      IMAGE_BASE_URL: ${OFFICE_IMAGE_BASE_URL:-https://openrouter.ai/api/v1}
+      IMAGE_HEADERS: ${OFFICE_IMAGE_HEADERS:-}
+      IMAGE_MODELS: ${OFFICE_IMAGE_MODELS:-}
+      # Administrator tools (usage_report, manage_credits): off until LibreChat's database is set.
+      MONGO_URI: ${OFFICE_MONGO_URI:-}
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8959), 3)"]
       interval: 30s

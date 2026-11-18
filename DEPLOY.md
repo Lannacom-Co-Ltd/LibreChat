@@ -148,6 +148,31 @@ modelSpecs:
 
 ใส่ `mcpServers: ['office-files']` ให้ **ทุก** model spec ที่ต้องการให้สร้างไฟล์ได้ทันทีโดยไม่ต้องกดเลือก
 
+**ห้ามใส่ข้อมูลผู้ใช้ (`{{LIBRECHAT_USER_*}}`) ใน headers ของ `office-files`** — LibreChat จะถือเป็นการเชื่อมต่อรายคน
+และไม่โหลดเครื่องมือตอนเริ่ม ทำให้แชทจาก model spec ไม่มีเครื่องมือสร้างไฟล์เลย เครื่องมือผู้ดูแลจึงแยกเป็นอีก entry:
+
+```yaml
+  office-admin:                        # รายงานการใช้งาน + จัดการเครดิต (เฉพาะ ADMIN) ผู้ดูแลเลือกจากเมนู MCP ในแชท
+    type: streamable-http
+    url: http://office-docs:8959/mcp
+    title: 'AI Hub Admin'
+    description: 'Usage report and token credits (administrators only)'
+    headers:
+      Authorization: 'Bearer ${OFFICE_DOCS_API_KEY}'
+      X-AIHub-Scope: 'admin'
+      X-User-Id: '{{LIBRECHAT_USER_ID}}'
+      X-User-Role: '{{LIBRECHAT_USER_ROLE}}'
+    timeout: 120000
+    chatMenu: true
+```
+
+**เมนูโมเดลแยกตามค่ายพร้อมโลโก้** — ใส่ `group` (ชื่อค่าย), `iconURL` / `groupIcon` เป็น `/assets/custom/models/<ค่าย>.svg`
+(ไฟล์อยู่ใน `branding/models/` สร้างด้วย `node branding/build-model-icons.js`) และ `artifacts: 'default'`, `skills: true`
+ในแต่ละ spec เพื่อให้ Artifacts และ Skills ใช้ได้ในแชทของ spec นั้น ตั้ง `modelSpecs.addedEndpoints: ['agents']` เพื่อไม่ให้รายการรหัสโมเดลซ้ำ
+
+**ถ้าใช้ Portkey เป็นทางผ่าน:** config ของ Portkey ต้อง**ไม่มี** `override_params.tools` (ถ้ามี Portkey จะแทนที่รายการเครื่องมือทั้งหมด
+ทำให้ MCP, Skills, สร้างไฟล์ และ Agent ใช้ไม่ได้) และต้องเปิดสิทธิ์ทุกโมเดลในเมนูใน integration ไม่อย่างนั้นผู้ใช้จะรอหมุนราว 2 นาทีแล้วได้ error 412
+
 ---
 
 ## 6. ตั้งค่า Office Files (`office.env`)
@@ -193,6 +218,16 @@ grep '^OFFICE_DOCS_API_KEY=' office.env >> .env
 | `OFFICE_XML` | XML |
 | `OFFICE_CHART` | แผนภูมิ |
 | `OFFICE_DIAGRAM` | แผนภาพ |
+| `OFFICE_IMAGE` | สร้าง/แก้ภาพด้วย AI (`create_image`) ทำงานเมื่อมี `OFFICE_IMAGE_API_KEY` ด้วย |
+| `OFFICE_ADMIN` | รายงานการใช้งาน + จัดการเครดิต ทำงานเมื่อมี `OFFICE_MONGO_URI` ด้วย |
+
+**สร้างภาพ (ไม่บังคับ)** — `OFFICE_IMAGE_API_KEY` = คีย์ OpenRouter ตรง (`OFFICE_IMAGE_BASE_URL` ค่าเริ่มต้น `https://openrouter.ai/api/v1`)
+ใช้ได้ทุกโมเดลภาพ; ผ่าน Portkey ได้เฉพาะโมเดล Gemini image (Portkey ไม่ส่งต่อ `/images` ของ OpenRouter) โดยตั้ง
+`OFFICE_IMAGE_BASE_URL=https://api.portkey.ai/v1` และ `OFFICE_IMAGE_HEADERS={"x-portkey-config":"<config>"}`;
+`OFFICE_IMAGE_MODELS` = รายชื่อโมเดลคั่นด้วย `,` ตัวแรกเป็นค่าเริ่มต้น
+
+**เครื่องมือผู้ดูแล** — `OFFICE_MONGO_URI=mongodb://mongodb:27017/LibreChat` (อ่านรายงาน เขียนเฉพาะยอดเครดิต) และต้องมี entry
+`office-admin` ใน `librechat.yaml` (ข้อ 5) ผู้ใช้ที่ role ไม่ใช่ `ADMIN` เรียกแล้วจะถูกปฏิเสธ
 
 **วิธีที่ง่ายที่สุด (จากเครื่องตัวเอง):** แก้ค่า on/off ใน `office.env` ในเครื่อง แล้วรัน `./office/apply.sh` จากโฟลเดอร์ repo
 (Git Bash บน Windows ได้) สคริปต์ตรวจตัวสะกด ส่งเฉพาะบรรทัด on/off ขึ้น server (สำรองไฟล์เดิม ไม่แตะรหัสผ่าน)

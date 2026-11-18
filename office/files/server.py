@@ -1,7 +1,8 @@
 """The single file-creation MCP server LibreChat talks to in AI Hub (office-files).
 
-Own tools: create_pdf_from_markdown (pdf.py), create_text_file, create_chart (charts.py) and
-create_diagram (diagrams.py). The office-docs server's Word, Excel, PowerPoint, email and memo
+Own tools: create_pdf_from_markdown (pdf.py), create_text_file, create_chart (charts.py),
+create_diagram (diagrams.py), create_image (images.py), and for administrators usage_report and
+manage_credits (admin.py). The office-docs server's Word, Excel, PowerPoint, email and memo
 tools are mounted through a proxy (OFFICE_DOCS_URL), so the chat menu has one entry. Each kind
 of file can be switched off in office.env (features.py).
 
@@ -31,6 +32,7 @@ from fastmcp import FastMCP
 from fastmcp.client.transports import StreamableHttpTransport
 from fastmcp.exceptions import ToolError
 from fastmcp.server import create_proxy
+from fastmcp.server.dependencies import get_http_headers
 from fastmcp.server.middleware import Middleware as ToolMiddleware
 from fastmcp.tools.tool import ToolResult
 from mcp.types import ImageContent, TextContent
@@ -39,7 +41,9 @@ from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
+import admin
 import features
+import images
 import storage
 from checks import CHECKS
 from charts import Series, draw_chart
@@ -242,7 +246,99 @@ def create_diagram(
     return report(store_image(png, file_name, image_format), problems=problems, image=png, embeddable=True)
 
 
-OWN_TOOLS = {"create_pdf_from_markdown", "create_text_file", "create_chart", "create_diagram"}
+AspectRatio = Literal["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"]
+ImageModel = Literal[tuple(images.MODELS)]
+
+
+def create_image(
+    prompt: str,
+    model: ImageModel = images.MODELS[0],
+    aspect_ratio: AspectRatio = "1:1",
+    edit_image_link: str | None = None,
+    file_name: str = "image",
+) -> ToolResult:
+    if not prompt.strip():
+        raise ValueError("prompt is empty; describe the picture")
+    png, cost = images.generate(model, prompt.strip(), aspect_ratio, edit_image_link)
+    link = store_image(png, file_name, "png")
+    print(f"create_image {model} {aspect_ratio} cost={cost}", flush=True)
+    extra = (
+        f"Made with {model}. Show the picture in your reply as ![short description](link) on its "
+        "own line, then the link to download it."
+    )
+    return report(link, image=png, embeddable=True, extra=extra)
+
+
+create_image.__doc__ = f"""Create a picture with an AI image model (illustration, photo-style image, poster,
+    banner, icon, cover) or edit a picture this tool made earlier, and return its link.
+
+    Only when the user asks for a picture. Write the prompt in English, describing the subject,
+    style, colours and layout; put any words that must appear in the picture in quotes. To edit,
+    pass the earlier link in edit_image_link and describe only the change. Each call costs money:
+    make one picture per request unless the user asks for options.
+
+    :param prompt: What to draw, or for an edit, what to change.
+    :param model: {", ".join(images.MODELS)}. Default {images.MODELS[0]}.
+    :param aspect_ratio: 1:1 (default), 16:9 (slide, banner), 9:16 (story, poster), 4:3, 3:4, 3:2, 2:3.
+    :param edit_image_link: Link of a picture made by create_image to edit; leave empty for a new picture.
+    :param file_name: File name without extension, in English.
+    """
+mcp.tool(create_image)
+
+
+def admin_headers() -> dict[str, str]:
+    headers = get_http_headers(include_all=True)
+    admin.require_admin(headers)
+    return headers
+
+
+@mcp.tool
+def usage_report(days: int = 30) -> ToolResult:
+    """Administrators only: usage report as an Excel file (per user, per model, per day: messages,
+    chats, prompt and completion tokens, cost in USD).
+
+    :param days: How many days back to include (1-366). Default 30.
+    """
+    headers = admin_headers()
+    if not 1 <= days <= 366:
+        raise ValueError("days must be between 1 and 366")
+    data, summary = admin.usage_workbook(days)
+    print(f"usage report ({days} days) for admin {headers.get('x-user-id')}", flush=True)
+    link = storage.store(data, f"usage-report-{days}d", "xlsx", XLSX)
+    return report(link, extra=summary)
+
+
+@mcp.tool
+def manage_credits(
+    action: Literal["list", "add", "set"],
+    email: str | None = None,
+    credits: int | None = None,
+) -> ToolResult:
+    """Administrators only: see or change users' token credits (1,000,000 credits = 1 USD).
+
+    list: every user's balance (lowest first), with an Excel file.
+    add: top up one user by credits. set: set one user's balance to exactly credits.
+    Confirm the user's email and the amount with the administrator before add or set.
+
+    :param action: list, add or set.
+    :param email: The user's email (for add and set).
+    :param credits: Number of credits (for add and set).
+    """
+    headers = admin_headers()
+    if action == "list":
+        data, text = admin.balances()
+        return report(storage.store(data, "credits", "xlsx", XLSX), extra=text)
+    if not email or credits is None:
+        raise ValueError("add and set need email and credits")
+    text = admin.change_credits(action, email, credits, headers.get("x-user-id") or "unknown")
+    return ToolResult(content=[TextContent(type="text", text=text)])
+
+
+XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+OWN_TOOLS = {
+    "create_pdf_from_markdown", "create_text_file", "create_chart", "create_diagram",
+    "create_image", "usage_report", "manage_credits",
+}
 EXPIRY_TEXT = re.compile(r"\s*\.?\s*Link is valid for \d+ seconds\.?", re.IGNORECASE)
 OLD_PREFIX = re.compile(r"^[0-9a-f]{8}_")
 
@@ -388,11 +484,21 @@ class Switches(ToolMiddleware):
     """Hides and refuses the tools of file kinds switched off in office.env (features.py)."""
 
     async def on_list_tools(self, context, call_next):
+        # LibreChat reaches this server through two entries in librechat.yaml: office-files
+        # (file tools, shared by every chat) and office-admin (X-AIHub-Scope: admin, with the
+        # user's id and role), so each entry lists only its own tools. Calls still check the role.
         tools = await call_next(context)
-        return [tool for tool in tools if tool.name not in features.DISABLED_TOOLS]
+        admin_scope = get_http_headers(include_all=True).get("x-aihub-scope") == "admin"
+        return [
+            tool
+            for tool in tools
+            if tool.name not in features.DISABLED_TOOLS and (tool.name in features.ADMIN_TOOLS) == admin_scope
+        ]
 
     async def on_call_tool(self, context, call_next):
         name = context.message.name
+        if name in features.ADMIN_TOOLS and not admin.is_admin(get_http_headers(include_all=True)):
+            raise ToolError(f"{name} is for administrators only. Tell the user they need an administrator.")
         file_type = (context.message.arguments or {}).get("file_type")
         if name == "create_text_file" and file_type not in features.TEXT_TYPES:
             name = f".{file_type}"
