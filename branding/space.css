@@ -292,24 +292,49 @@ div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"])
   background: var(--ah-button-hover);
 }
 
-/* "OR" divider above the SSO buttons. */
-div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) {
-  margin-top: 26px;
+/* SSO first. LibreChat renders [heading][error][email form][sign-up link][OR divider][spacer]
+   [SSO buttons]; the card becomes a flex column and order shows
+   [heading][SSO buttons][OR divider][error][email form][sign-up link], so the SSO sign-in
+   sits on top and the email form below it. Tab order follows the visual order only in
+   browsers that honour reading-flow; elsewhere the keyboard still reaches the email
+   fields first, which keeps every control reachable. */
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
+  display: flex;
+  flex-direction: column;
+  reading-flow: flex-visual;
+}
+
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > * {
+  order: 10;
+}
+
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1 {
+  order: 0;
+}
+
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > div:has(a[href*='/oauth/']) {
+  order: 1;
+  margin-top: 0;
+}
+
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > .border-t:has(> .absolute) {
+  order: 2;
+  margin: 28px 0;
   border-color: var(--ah-line);
 }
 
-div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) > .absolute {
+/* LibreChat's spacer under the divider: the divider's own margin replaces it. */
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > .border-t:has(> .absolute) + div:empty {
+  display: none;
+}
+
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > .border-t:has(> .absolute) > .absolute {
   color: var(--ah-muted);
   font-size: 12px;
   letter-spacing: 0.08em;
 }
 
-div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) + div {
-  margin-top: 26px;
-}
-
-div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) + div + div,
-div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div .border-t:has(> .absolute) + div + div > div:first-child {
+div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > div:has(a[href*='/oauth/']) > div:first-child {
   margin-top: 0;
 }
 
@@ -374,6 +399,81 @@ div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"])
 /* Theme / contrast toggles: kept in the bottom-left corner of the form side. */
 div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div.absolute.bottom-0 {
   margin: 0;
+}
+
+/* ========================= Login: narrow screens ========================= */
+
+/* Phones and small tablets follow the common sign-in layout (Linear, ChatGPT): a plain page,
+   everything in one centred column: the mark, one heading, the SSO button as the main way
+   in, then the email form. LibreChat's "Welcome back" is swapped for "Sign in to <name>"
+   visually (screen readers still read the original). */
+@media (max-width: 959px) {
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > div:has(> img[src="assets/logo.svg"]) {
+    display: none;
+  }
+
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main {
+    align-items: center;
+    padding: 32px 28px 88px;
+  }
+
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div {
+    width: min(400px, 100%);
+  }
+
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1 {
+    margin-bottom: 32px;
+    font-size: 0;
+    line-height: 0;
+    text-align: center;
+  }
+
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1::before {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 30px;
+    margin: 0 auto 22px;
+    background: url('mark.svg?v=4') center / contain no-repeat;
+  }
+
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1::after {
+    content: 'Sign in to Lannacom AI Hub';
+    display: block;
+    font-size: clamp(22px, 6.6vw, 28px);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  html:lang(th) div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div > h1::after {
+  content: 'เข้าสู่ระบบ Lannacom AI Hub';
+}
+
+  /* With SSO on the page it is the main way in: filled. The email form's Continue steps
+     back to an outline so there is one primary button. */
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div a[href*='/oauth/'] {
+    border-color: transparent;
+    background: var(--ah-button-bg);
+    color: var(--ah-button-fg);
+    font-weight: 600;
+  }
+
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div a[href*='/oauth/']:hover {
+    border-color: transparent;
+    background: var(--ah-button-hover);
+  }
+
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:has(a[href*='/oauth/']) [data-testid='login-button'] {
+    border: 1px solid var(--ah-line2);
+    background: transparent;
+    color: var(--ah-text);
+  }
+
+  div:has(> main):is(:has(form[aria-label="Login form"]), :has(a[href*="/oauth/"]):not(:has(form))) > main > div:has(a[href*='/oauth/']) [data-testid='login-button']:hover {
+    border-color: rgb(var(--border-medium));
+    background: var(--ah-field);
+  }
 }
 
 /* ============================ Login: left panel ============================ */

@@ -23,6 +23,18 @@ const FONT_VERSION = 1;
 const PRODUCT_NAME = 'Lannacom AI Hub';
 /** Wide enough for the split screen; below this the panel is hidden. */
 const SPLIT_MIN_WIDTH = 960;
+/** Narrow-screen heading, per interface language (the first entry is the default). */
+const MOBILE_TITLES = [
+  { lang: 'en', text: `Sign in to ${PRODUCT_NAME}` },
+  { lang: 'th', text: `เข้าสู่ระบบ ${PRODUCT_NAME}` },
+];
+
+/** Per-language content for a pseudo-element; languages not listed keep the first entry. */
+const localized = (pseudo, entries) =>
+  entries
+    .slice(1)
+    .map(({ lang, text }) => `html:lang(${lang}) ${pseudo} {\n  content: '${text}';\n}`)
+    .join('\n\n');
 
 /**
  * Text uses Inter, the same family LibreChat uses inside the app, so the login page and the
@@ -345,24 +357,49 @@ ${BUTTON}:hover {
   background: var(--ah-button-hover);
 }
 
-/* "OR" divider above the SSO buttons. */
-${CARD} .border-t:has(> .absolute) {
-  margin-top: 26px;
+/* SSO first. LibreChat renders [heading][error][email form][sign-up link][OR divider][spacer]
+   [SSO buttons]; the card becomes a flex column and order shows
+   [heading][SSO buttons][OR divider][error][email form][sign-up link], so the SSO sign-in
+   sits on top and the email form below it. Tab order follows the visual order only in
+   browsers that honour reading-flow; elsewhere the keyboard still reaches the email
+   fields first, which keeps every control reachable. */
+${CARD} {
+  display: flex;
+  flex-direction: column;
+  reading-flow: flex-visual;
+}
+
+${CARD} > * {
+  order: 10;
+}
+
+${CARD} > h1 {
+  order: 0;
+}
+
+${CARD} > div:has(a[href*='/oauth/']) {
+  order: 1;
+  margin-top: 0;
+}
+
+${CARD} > .border-t:has(> .absolute) {
+  order: 2;
+  margin: 28px 0;
   border-color: var(--ah-line);
 }
 
-${CARD} .border-t:has(> .absolute) > .absolute {
+/* LibreChat's spacer under the divider: the divider's own margin replaces it. */
+${CARD} > .border-t:has(> .absolute) + div:empty {
+  display: none;
+}
+
+${CARD} > .border-t:has(> .absolute) > .absolute {
   color: var(--ah-muted);
   font-size: 12px;
   letter-spacing: 0.08em;
 }
 
-${CARD} .border-t:has(> .absolute) + div {
-  margin-top: 26px;
-}
-
-${CARD} .border-t:has(> .absolute) + div + div,
-${CARD} .border-t:has(> .absolute) + div + div > div:first-child {
+${CARD} > div:has(a[href*='/oauth/']) > div:first-child {
   margin-top: 0;
 }
 
@@ -427,6 +464,79 @@ ${BUTTON}:focus-visible {
 /* Theme / contrast toggles: kept in the bottom-left corner of the form side. */
 ${THEMEBAR} {
   margin: 0;
+}
+
+/* ========================= Login: narrow screens ========================= */
+
+/* Phones and small tablets follow the common sign-in layout (Linear, ChatGPT): a plain page,
+   everything in one centred column: the mark, one heading, the SSO button as the main way
+   in, then the email form. LibreChat's "Welcome back" is swapped for "Sign in to <name>"
+   visually (screen readers still read the original). */
+@media (max-width: ${SPLIT_MIN_WIDTH - 1}px) {
+  ${LOGO_BOX} {
+    display: none;
+  }
+
+  ${AUTH} > main {
+    align-items: center;
+    padding: 32px 28px 88px;
+  }
+
+  ${CARD} {
+    width: min(400px, 100%);
+  }
+
+  ${CARD} > h1 {
+    margin-bottom: 32px;
+    font-size: 0;
+    line-height: 0;
+    text-align: center;
+  }
+
+  ${CARD} > h1::before {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 30px;
+    margin: 0 auto 22px;
+    background: url('mark.svg?v=${LOGO_VERSION}') center / contain no-repeat;
+  }
+
+  ${CARD} > h1::after {
+    content: '${MOBILE_TITLES[0].text}';
+    display: block;
+    font-size: clamp(22px, 6.6vw, 28px);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  ${localized(`${CARD} > h1::after`, MOBILE_TITLES)}
+
+  /* With SSO on the page it is the main way in: filled. The email form's Continue steps
+     back to an outline so there is one primary button. */
+  ${CARD} a[href*='/oauth/'] {
+    border-color: transparent;
+    background: var(--ah-button-bg);
+    color: var(--ah-button-fg);
+    font-weight: 600;
+  }
+
+  ${CARD} a[href*='/oauth/']:hover {
+    border-color: transparent;
+    background: var(--ah-button-hover);
+  }
+
+  ${CARD}:has(a[href*='/oauth/']) [data-testid='login-button'] {
+    border: 1px solid var(--ah-line2);
+    background: transparent;
+    color: var(--ah-text);
+  }
+
+  ${CARD}:has(a[href*='/oauth/']) [data-testid='login-button']:hover {
+    border-color: rgb(var(--border-medium));
+    background: var(--ah-field);
+  }
 }
 
 /* ============================ Login: left panel ============================ */

@@ -12,7 +12,7 @@ by `docker-compose.override.yml`.
 | Screen | Layout |
 | --- | --- |
 | 960px wide and up | Left half: the mark, the headline "Start with a *thought*." and a sample chat that switches to a random example every 6 seconds (slides, a spreadsheet, a memo, a chart, a PDF summary, a Thai translation). Right half: LibreChat's sign-in form, restyled |
-| Narrower | The mark and the form only |
+| Narrower | One centred column, as on Linear / ChatGPT: the mark, "Sign in to Lannacom AI Hub" (Thai: "เข้าสู่ระบบ Lannacom AI Hub"), the SSO button filled as the main way in, OR, then the email form with an outlined Continue |
 
 With `ALLOW_EMAIL_LOGIN=false` the SSO button takes the primary (filled) style. The privacy
 and terms links are hidden on the login page. Visitors who ask their system to reduce motion
