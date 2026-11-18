@@ -1,4 +1,4 @@
-"""Diagrams (flowchart, org chart, timeline, mind map) drawn with Graphviz in the CMUBS look.
+"""Diagrams (flowchart, org chart, timeline, mind map) drawn with Graphviz in the AI Hub look.
 
 Labels are table rows rather than Graphviz line breaks, because Graphviz spaces lines by the
 font size alone and Thai upper vowels and tone marks would touch the line above. Long labels
@@ -39,15 +39,15 @@ class TimelineEvent(BaseModel):
 
 
 FLOW_SHAPES = {
-    "process": 'shape=box, style="rounded,filled", fillcolor="#e6f0f2"',
-    "start": 'shape=box, style="rounded,filled", fillcolor="#145e6e", fontcolor="white", penwidth=0',
-    "end": 'shape=box, style="rounded,filled", fillcolor="#145e6e", fontcolor="white", penwidth=0',
+    "process": 'shape=box, style="rounded,filled", fillcolor="#f3f1ec"',
+    "start": 'shape=box, style="rounded,filled", fillcolor="#f05023", fontcolor="white", penwidth=0',
+    "end": 'shape=box, style="rounded,filled", fillcolor="#f05023", fontcolor="white", penwidth=0',
     "decision": 'shape=diamond, style=filled, fillcolor="#ffffff"',
-    "data": 'shape=parallelogram, style=filled, fillcolor="#f3ecf7", color="#8a4fa3"',
+    "data": 'shape=parallelogram, style=filled, fillcolor="#fdeee8", color="#f05023"',
     "note": 'shape=note, style=filled, fillcolor="#fff8e1", color="#b58b00"',
 }
-DARK_BOX = 'shape=box, style="rounded,filled", fillcolor="#145e6e", fontcolor="white", penwidth=0'
-LIGHT_BOX = 'shape=box, style="rounded,filled", fillcolor="#e6f0f2"'
+DARK_BOX = 'shape=box, style="rounded,filled", fillcolor="#1f1e1d", fontcolor="white", penwidth=0'
+LIGHT_BOX = 'shape=box, style="rounded,filled", fillcolor="#f3f1ec"'
 
 
 def _plain(text: str) -> str:
@@ -102,17 +102,17 @@ def draw_diagram(diagram_type: DiagramType, nodes, edges, events, title, directi
             notes.append(f"not connected to anything: {', '.join(loose)}")
 
     graph = [
-        'fontname="Sarabun"; fontsize=18; fontcolor="#145e6e"; labelloc=t; pad=0.3; dpi=150; bgcolor="white";',
+        'fontname="Sarabun"; fontsize=18; fontcolor="#1f1e1d"; labelloc=t; pad=0.3; dpi=150; bgcolor="white";',
         f'label="{_plain(title)}";' if title else "",
-        'node [fontname="Sarabun", fontsize=13, color="#145e6e", penwidth=1.4, margin="0.18,0.08"];',
-        'edge [fontname="Sarabun", fontsize=11, color="#5f6b6d", fontcolor="#3c4446", arrowsize=0.8];',
+        'node [fontname="Sarabun", fontsize=13, color="#3d3d3a", penwidth=1.4, margin="0.18,0.08"];',
+        'edge [fontname="Sarabun", fontsize=11, color="#6b6a65", fontcolor="#3d3d3a", arrowsize=0.8];',
     ]
     engine = "dot"
     if diagram_type == "timeline":
         vertical = direction == "top_down" or (direction == "auto" and len(events) > 6)
         graph.append(f"rankdir={'TB' if vertical else 'LR'}; nodesep=0.35; ranksep=0.45;")
         graph += [f"e{i} [label={_label(e.label, e.date)}, {LIGHT_BOX}];" for i, e in enumerate(events)]
-        graph.append(" -> ".join(f"e{i}" for i in range(len(events))) + ' [color="#145e6e", penwidth=2];')
+        graph.append(" -> ".join(f"e{i}" for i in range(len(events))) + ' [color="#f05023", penwidth=2];')
     elif diagram_type == "mind_map":
         engine = "twopi"
         graph.append(f"root={ids[nodes[0].id]}; overlap=false; splines=true; ranksep=1.6;")

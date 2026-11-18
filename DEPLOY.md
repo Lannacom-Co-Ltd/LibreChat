@@ -1,7 +1,7 @@
-# CMUBS AI Hub — ติดตั้งบน server ใหม่
+# Lannacom AI Hub — ติดตั้งบน server ใหม่
 
 คู่มือย้ายหรือติดตั้งระบบทั้งชุดบน server ใหม่ (เช่นจาก server ทดสอบของบริษัทไป server ของลูกค้า)
-ครอบคลุมทุกอย่างที่ทำไว้ใน branch `cmu-ai`:
+ครอบคลุมทุกอย่างที่ทำไว้ใน branch `new-AI-Hub`:
 
 - **LibreChat** และการปรับแต่งหน้า login, ชื่อระบบ, ไอคอน, คำทักทาย (`branding/`, `docker-compose.override.yml`)
 - **Office Files** ให้ AI สร้างไฟล์ Word, Excel, PowerPoint, PDF, ไฟล์ข้อความ, กราฟ, แผนภาพ, บันทึกข้อความ
@@ -51,7 +51,7 @@ LibreChat ──MCP──▶ office-docs:8959 (office-files) ──┬── PDF
 
 ```bash
 sudo mkdir -p /opt/librechat && sudo chown $USER /opt/librechat
-git clone -b cmu-ai https://github.com/Lannacom-Co-Ltd/LibreChat.git /opt/librechat/<ชื่อ>
+git clone -b new-AI-Hub https://github.com/Lannacom-Co-Ltd/LibreChat.git /opt/librechat/<ชื่อ>
 cd /opt/librechat/<ชื่อ>
 ```
 
@@ -80,7 +80,7 @@ openssl rand -hex 32   # OPENID_SESSION_SECRET
 **ค่าของระบบนี้:**
 
 ```ini
-APP_TITLE=CMUBS AI Hub
+APP_TITLE=Lannacom AI Hub
 DOMAIN_CLIENT=https://<โดเมน>
 DOMAIN_SERVER=https://<โดเมน>
 
@@ -95,7 +95,7 @@ OPENID_CLIENT_SECRET=<จากผู้ดูแล SSO>
 OPENID_SESSION_SECRET=<สุ่มด้านบน>
 OPENID_SCOPE="openid profile email"
 OPENID_CALLBACK_URL=/oauth/openid/callback
-OPENID_BUTTON_LABEL=Continue with CMU IT Account
+OPENID_BUTTON_LABEL=Continue with SSO
 
 # AI
 OPENROUTER_KEY=<key ของลูกค้า>
@@ -294,7 +294,7 @@ $COMPOSE up -d --force-recreate api            # 4. ให้ LibreChat เช�
 
 | ตรวจ | คำสั่ง | ผลที่ควรได้ |
 |---|---|---|
-| หน้า login | เปิด `https://<โดเมน>/login` | ธีม CMUBS และปุ่ม SSO ไม่มีฟอร์มอีเมล |
+| หน้า login | เปิด `https://<โดเมน>/login` | จอกว้างแบ่งครึ่ง (ซ้ายมีกล่องแชทตัวอย่างหมุนเวียน) จอแคบเป็นคอลัมน์เดียว ถ้าตั้ง SSO อย่างเดียวจะเหลือแค่ปุ่ม SSO |
 | CSS รุ่นล่าสุด | `curl -s https://<โดเมน>/login \| grep -o 'space.css?v=[0-9]*'` | ตรงกับเลขใน `docker-compose.override.yml` |
 | SSO | กดปุ่ม login | กลับมาที่หน้าแชทได้ |
 | Office Files | `sudo docker ps --filter name=office` | 3 ตัว `healthy` + `office-net` |
@@ -339,15 +339,15 @@ sudo docker compose -p cmu-office -f docker-compose.office.yml --env-file office
 
 ---
 
-## 12. ปรับให้เป็นของลูกค้ารายอื่น
+## 12. ปรับชื่อและหน้าตาให้ลูกค้า
 
-ระบบนี้ใช้ชื่อและแบรนด์ของ CMUBS ถ้านำไปใช้กับลูกค้ารายอื่นต้องเปลี่ยน:
+ระบบนี้ใช้ชื่อ Lannacom AI Hub ถ้าลูกค้าต้องการชื่อหรือหน้าตาของตัวเอง เปลี่ยนที่:
 
 | สิ่งที่เปลี่ยน | ที่ |
 |---|---|
-| ชื่อระบบ | `APP_TITLE` ใน `.env`, `<title>` ใน `command` ของ `docker-compose.override.yml` |
-| โลโก้ ไอคอน | `branding/cmubs-logo.png` แล้วรัน `node branding/build-icons.js` (ดู `branding/README.md`) |
-| หน้า login, สี, ฟอนต์, คำทักทาย | `branding/build-space-css.js` → `node branding/build-space-css.js` → เพิ่มเลข `space.css?v=` |
-| สีและโลโก้ในไฟล์ที่ AI สร้าง | `TEAL`, `THEME_COLORS`, `LOGO` ใน `office/build-templates.py` แล้วรันตามวิธีในหัวไฟล์; `TEAL`, `CHART_COLORS`, `CSS` ใน `office/files/server.py`; `office/templates/custom_email_template.html` |
-| บันทึกข้อความ | `build_memo()` ใน `office/build-templates.py` และ `office/config/docx_templates.yaml` |
+| ชื่อระบบ | `APP_TITLE` ใน `.env`, `<title>` ใน `command` ของ `docker-compose.override.yml`, `PRODUCT_NAME` ใน `branding/build-space-css.js`, `PRODUCT` ใน `branding/login.js` |
+| โลโก้ ไอคอน | `branding/mark.svg` แล้วรัน `node branding/build-icons.js` (ดู `branding/README.md`) |
+| หน้า login, สี, ฟอนต์, คำทักทาย | `branding/build-space-css.js` → `node branding/build-space-css.js` → เพิ่มเลข `space.css?v=`; หัวข้อและตัวอย่างแชทใน `branding/login.js` |
+| สีในไฟล์ที่ AI สร้าง (ไม่มีโลโก้) | `INK`, `ACCENT`, `THEME_COLORS` ใน `office/build-templates.py` แล้วรันตามวิธีในหัวไฟล์; `COLORS` ใน `office/files/charts.py`; สีใน `office/files/diagrams.py`, `office/files/pdf.py`, `office/overlay/sitecustomize.py` (Excel); `office/templates/custom_email_template.html` |
+| บันทึกข้อความ (`thai_memo`, ช่องตราสัญลักษณ์เว้นว่างไว้) | `build_memo()` ใน `office/build-templates.py` และ `office/config/docx_templates.yaml` |
 | ฟอนต์ | `office/fonts/` (ต้องเป็นฟอนต์ที่อนุญาตให้ฝังและแจกต่อได้ เช่น OFL) |

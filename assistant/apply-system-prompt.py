@@ -1,7 +1,7 @@
 """Puts assistant/system-prompt.md into every model spec of librechat.yaml as its promptPrefix.
 
 LibreChat turns a spec's promptPrefix into the instructions of the chat's agent, so every new
-chat with a listed model starts from the CMUBS system prompt. Running it again replaces the
+chat with a listed model starts from the organisation's system prompt. Running it again replaces the
 previous prompt; nothing else in the file changes. A copy of the file is kept first.
 
   python3 assistant/apply-system-prompt.py librechat.yaml

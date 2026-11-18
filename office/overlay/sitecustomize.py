@@ -6,7 +6,7 @@ site-packages/sitecustomize.py; the image itself is unchanged).
    **bold** and sizes written by the server would not show on Thai text. Each setter here also
    writes its complex-script twin, placed right after it as the schema orders them.
 
-2. Excel in the CMUBS look: Sarabun instead of Calibri, teal instead of the server's blues.
+2. Excel in the AI Hub look: Sarabun instead of Calibri, ink and orange instead of the server's blues.
 
 3. Images from this deployment's own bucket (charts from create_chart). Their links are
    public presigned URLs, which the server cannot fetch through Cloudflare and must not fetch
@@ -64,8 +64,8 @@ except ImportError:
     _xl_fonts = None
 
 # Excel: the server hard-codes Calibri and an Office blue for headers. Fonts without a name
-# become Sarabun, and its blues become the CMUBS teal family.
-_XLSX_COLORS = {"366092": "145E6E", "E7F3FF": "E6F0F2", "2F5597": "145E6E", "4472C4": "1E7C8F"}
+# become Sarabun, and its blues become the AI Hub ink and orange.
+_XLSX_COLORS = {"366092": "1F1E1D", "E7F3FF": "F5F3EE", "2F5597": "1F1E1D", "4472C4": "F05023"}
 
 
 def _xl_color(value):
@@ -124,7 +124,7 @@ def _patch_image_utils(module):
         return io.BytesIO(response.content), module.get_image_extension(content_type, parts.path)
 
     module.download_image = download_image
-    module._cmubs_patched = True
+    module._aihub_patched = True
 
 
 _import = builtins.__import__
@@ -136,8 +136,8 @@ def _import_hook(name, *args, **kwargs):
     module = _import(name, *args, **kwargs)
     loaded = sys.modules.get("image_utils")
     ready = loaded is not None and all(hasattr(loaded, n) for n in _NEEDED)
-    if ready and not getattr(loaded, "_cmubs_patched", False):
-        loaded._cmubs_patched = True
+    if ready and not getattr(loaded, "_aihub_patched", False):
+        loaded._aihub_patched = True
         try:
             _patch_image_utils(loaded)
         except Exception as err:  # never break the server over the overlay

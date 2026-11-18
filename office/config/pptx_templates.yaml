@@ -1,14 +1,14 @@
 # PowerPoint templates (mounted at /app/config in office-docs). The decks are built by
-# office/build-templates.py: Sarabun, CMUBS teal, logo on every slide.
+# office/build-templates.py: Sarabun, dark titles and a thin orange bar on every slide.
 templates:
-  - name: cmubs_16_9
-    description: CMU Business School deck, widescreen. Use by default.
+  - name: deck_16_9
+    description: Widescreen deck. Use by default.
     pptx_path: custom_pptx_template_16_9.pptx
     default: true
     defaults:
       language: th-TH
-  - name: cmubs_4_3
-    description: CMU Business School deck, 4:3. Use only when the user asks for 4:3.
+  - name: deck_4_3
+    description: 4:3 deck. Use only when the user asks for 4:3.
     pptx_path: custom_pptx_template_4_3.pptx
     defaults:
       language: th-TH

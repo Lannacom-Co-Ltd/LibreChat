@@ -1,13 +1,14 @@
-"""Builds the CMUBS Word and PowerPoint templates for the office-docs MCP server.
+"""Builds the Word and PowerPoint templates for the office-docs MCP server.
 
 Starts from the server's own default templates (so every style and layout it relies on is
 present) and changes only the look: Sarabun for Thai and Latin text, th-TH proofing, A4 with
-Thai official-letter margins, the CMUBS deep teal, the logo on every slide, and Sarabun
-embedded in the Word files so they look the same on machines without the font.
+Thai official-letter margins, dark headings with an orange accent (the AI Hub colours), a thin
+orange bar on every slide, and Sarabun embedded in the Word files so they look the same on
+machines without the font. No logo: the files belong to whoever asked for them.
 
 Run from the repository root (needs Docker; the image already has python-docx/python-pptx):
 
-  docker run --rm -v "$PWD/office:/work" -v "$PWD/branding/icons:/icons:ro" \
+  docker run --rm -v "$PWD/office:/work" \
     --entrypoint python georgx22/mcp-office-docs@sha256:9c26e1944104ed01d870abae94665e4e5398ee74d50d33c33ba4622db534b38a \
     /work/build-templates.py
 
@@ -40,28 +41,28 @@ DEFAULTS = Path("/app/default_templates")
 WORK = Path("/work")
 OUT = WORK / "templates"
 FONTS = WORK / "fonts"
-LOGO = Path("/icons/logo-light.png")
 
 FONT = "Sarabun"
-TEAL = "145E6E"
+INK = "1F1E1D"
+ACCENT = "E04A1F"
 LANG = "th-TH"
 
 BODY_PT = 12
 HEADING_PT = {1: 16, 2: 14, 3: 13, 4: 12, 5: 12, 6: 12}
 TITLE_PT = 20
 
-# Office theme: accents follow the CMUBS logo (teal and purple) around the deep teal.
+# Office theme: the AI Hub orange and green first, then colours that read well beside them.
 THEME_COLORS = {
-    "dk2": "0B3540",
-    "lt2": "EEF3F4",
-    "accent1": TEAL,
-    "accent2": "8A4FA3",
-    "accent3": "1E9BB0",
-    "accent4": "5C3B8C",
-    "accent5": "6BB7C4",
-    "accent6": "B58BC9",
-    "hlink": TEAL,
-    "folHlink": "5C3B8C",
+    "dk2": INK,
+    "lt2": "F0EEE6",
+    "accent1": "F05023",
+    "accent2": "1AB06C",
+    "accent3": "3B6FD9",
+    "accent4": "F2A33A",
+    "accent5": "7A5CFA",
+    "accent6": "6B6A65",
+    "hlink": "D9441A",
+    "folHlink": "7A5CFA",
 }
 
 
@@ -69,7 +70,7 @@ THEME_COLORS = {
 
 
 def retheme(xml: str) -> str:
-    """Theme fonts to Sarabun (Latin and complex script) and the CMUBS colour scheme."""
+    """Theme fonts to Sarabun (Latin and complex script) and the AI Hub colour scheme."""
     xml = re.sub(r'<a:latin typeface="[^"]*"', f'<a:latin typeface="{FONT}"', xml)
     xml = re.sub(r'<a:cs typeface="[^"]*"', f'<a:cs typeface="{FONT}"', xml)
     for name, hex_ in THEME_COLORS.items():
@@ -135,7 +136,7 @@ def set_run_props(rpr, size_pt=None, bold=None, color=None):
 
 
 def style_docx(doc):
-    """A4, official-letter margins, Sarabun everywhere, teal headings, th-TH proofing."""
+    """A4, official-letter margins, Sarabun everywhere, dark headings, an orange title, th-TH proofing."""
     for section in doc.sections:
         section.page_width, section.page_height = Cm(21), Cm(29.7)
         section.top_margin, section.bottom_margin = Cm(2.5), Cm(2)
@@ -158,9 +159,9 @@ def style_docx(doc):
         match = re.fullmatch(r"Heading (\d)", style.name)
         if match:
             level = int(match.group(1))
-            set_run_props(rpr, size_pt=HEADING_PT.get(level, BODY_PT), bold=True, color=TEAL)
+            set_run_props(rpr, size_pt=HEADING_PT.get(level, BODY_PT), bold=True, color=INK)
         elif style.name == "Title":
-            set_run_props(rpr, size_pt=TITLE_PT, bold=True, color=TEAL)
+            set_run_props(rpr, size_pt=TITLE_PT, bold=True, color=ACCENT)
         elif style.name == "Subtitle":
             set_run_props(rpr, size_pt=14, color="555555")
         else:
@@ -300,8 +301,8 @@ def labelled(doc, parts, tab_cm=None, space_after=4):
 
 
 def build_memo(base: bytes) -> bytes:
-    """บันทึกข้อความ in the layout of the Thai official internal memo, CMUBS logo in place
-    of the Garuda."""
+    """บันทึกข้อความ in the layout of the Thai official internal memo. The emblem cell on the
+    left is left empty for the organisation's own emblem, as on a blank government form."""
     doc = Document(io.BytesIO(base))
     body = doc.element.body
     for child in list(body):
@@ -314,7 +315,6 @@ def build_memo(base: bytes) -> bytes:
     widths = (Cm(3.5), Cm(9), Cm(3.5))
     for cell, width in zip(head.rows[0].cells, widths):
         cell.width = width
-    head.cell(0, 0).paragraphs[0].add_run().add_picture(str(LOGO), height=Cm(1.6))
     title = head.cell(0, 1).paragraphs[0]
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     set_run_props(title.add_run("บันทึกข้อความ")._r.get_or_add_rPr(), size_pt=22, bold=True)
@@ -324,7 +324,7 @@ def build_memo(base: bytes) -> bytes:
     rule = labelled(doc, [("เรื่อง  ", True), ("{{subject}}", False)], space_after=10)
     border = OxmlElement("w:pBdr")
     bottom = OxmlElement("w:bottom")
-    for k, v in (("w:val", "single"), ("w:sz", "6"), ("w:space", "6"), ("w:color", TEAL)):
+    for k, v in (("w:val", "single"), ("w:sz", "6"), ("w:space", "6"), ("w:color", INK)):
         bottom.set(qn(k), v)
     border.append(bottom)
     p_pr = rule._p.get_or_add_pPr()
@@ -358,31 +358,21 @@ def brand_pptx(path: Path) -> bytes:
     prs = Presentation(str(path))
     master = prs.slide_masters[0]
     width, height = prs.slide_width, prs.slide_height
-    margin = Emu(int(width * 0.03))
-    logo_h = Emu(int(height * 0.085))
 
     # MasterShapes has no add_picture/add_shape; the slide shape tree API works on the
     # master's own tree and part.
     shapes = SlideShapes(master.shapes._spTree, master)
-    pic = shapes.add_picture(str(LOGO), 0, Emu(int(height * 0.035)), height=logo_h)
-    pic.left = width - pic.width - margin
-    pic.name = "CMUBS logo"
-
-    for shape in master.placeholders:
-        if shape.placeholder_format.type == 1 and shape.left + shape.width > pic.left - margin:
-            shape.width = pic.left - margin - shape.left
-
     bar = shapes.add_shape(1, 0, height - Emu(int(height * 0.012)), width, Emu(int(height * 0.012)))
     bar.fill.solid()
-    bar.fill.fore_color.rgb = SlideColor.from_string(TEAL)
+    bar.fill.fore_color.rgb = SlideColor.from_string("F05023")
     bar.line.fill.background()
-    bar.name = "CMUBS bar"
+    bar.name = "Accent bar"
 
     # python-pptx numbers new master shapes after the layout ids (2147483648 and up), which
     # PowerPoint refuses to open; give them the next ids after the master's own shapes.
     ids = [int(el.get("id")) for el in master.element.iter(pqn("p:cNvPr"))]
     next_id = max(i for i in ids if i < 2**31 - 2) + 1
-    for shape in (pic, bar):
+    for shape in (bar,):
         shape._element.find(".//" + pqn("p:cNvPr")).set("id", str(next_id))
         next_id += 1
 
@@ -391,7 +381,7 @@ def brand_pptx(path: Path) -> bytes:
         title_rpr.remove(fill)
     fill = SlideElement("a:solidFill")
     clr = SlideElement("a:schemeClr")
-    clr.set("val", "accent1")
+    clr.set("val", "tx2")
     fill.append(clr)
     title_rpr.insert(0, fill)
     title_rpr.set("b", "1")
@@ -413,7 +403,7 @@ def main():
     add_page_number_footer(doc)
     base = save_docx(doc)
     (OUT / "custom_docx_template.docx").write_bytes(embed_fonts(base))
-    (OUT / "cmubs_memo.docx").write_bytes(embed_fonts(build_memo(base)))
+    (OUT / "thai_memo.docx").write_bytes(embed_fonts(build_memo(base)))
 
     for aspect in ("16_9", "4_3"):
         (OUT / f"custom_pptx_template_{aspect}.pptx").write_bytes(

@@ -194,5 +194,5 @@ scripts/activity-labels/results/
 /.lighthouse/
 /e2e/lighthouse/.test-results/
 
-# CMUBS: secrets of the Office Files stack (docker-compose.office.yml)
+# AI Hub: secrets of the Office Files stack (docker-compose.office.yml)
 office.env

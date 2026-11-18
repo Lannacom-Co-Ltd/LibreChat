@@ -1,4 +1,4 @@
-"""The single file-creation MCP server LibreChat talks to in CMUBS AI Hub (office-files).
+"""The single file-creation MCP server LibreChat talks to in AI Hub (office-files).
 
 Own tools: create_pdf_from_markdown (pdf.py), create_text_file, create_chart (charts.py) and
 create_diagram (diagrams.py). The office-docs server's Word, Excel, PowerPoint, email and memo
@@ -191,7 +191,7 @@ def create_chart(
     image_format: Literal["png", "jpg"] = "png",
     file_name: str = "chart",
 ) -> ToolResult:
-    """Draw a chart in the CMUBS colours and return its link.
+    """Draw a chart in the AI Hub colours and return its link.
 
     Long category labels are fine: the chart is checked after drawing and switched to
     horizontal bars, tilted labels or a legend if labels would overlap. A pie uses only the
@@ -221,7 +221,7 @@ def create_diagram(
     image_format: Literal["png", "jpg"] = "png",
     file_name: str = "diagram",
 ) -> ToolResult:
-    """Draw a diagram in the CMUBS colours and return its link.
+    """Draw a diagram in the AI Hub colours and return its link.
 
     flowchart: nodes (kind sets the shape) joined by edges (arrows, optional labels).
     org_chart: nodes for people or units, edges from each superior to each subordinate.

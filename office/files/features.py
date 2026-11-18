@@ -30,7 +30,7 @@ FEATURES = {
     "OFFICE_PDF": ({"create_pdf_from_markdown"}, "create_pdf_from_markdown (.pdf)"),
     "OFFICE_EMAIL": ({"create_email_draft"}, "create_email_draft (.eml)"),
     "OFFICE_XML": ({"create_xml_file"}, "create_xml_file (.xml)"),
-    "OFFICE_MEMO": ({"cmubs_memo"}, "cmubs_memo for an official Thai internal memo (บันทึกข้อความ)"),
+    "OFFICE_MEMO": ({"thai_memo"}, "thai_memo for an official Thai internal memo (บันทึกข้อความ)"),
     "OFFICE_CHART": ({"create_chart"}, "create_chart (a chart image)"),
     "OFFICE_DIAGRAM": ({"create_diagram"}, "create_diagram (a diagram image)"),
 }

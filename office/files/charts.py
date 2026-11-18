@@ -1,4 +1,4 @@
-"""Charts in the CMUBS colours, checked for unreadable labels before they are saved.
+"""Charts in the AI Hub colours (orange, green, ink), checked for unreadable labels before they are saved.
 
 After drawing, the label boxes are measured. Overlapping category labels are wrapped at spaces,
 then tilted, and a bar chart still crowded becomes a horizontal bar chart, where labels have
@@ -18,8 +18,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 from pydantic import BaseModel, Field
 
-TEAL = "#145e6e"
-COLORS = [TEAL, "#8a4fa3", "#1e9bb0", "#5c3b8c", "#6bb7c4", "#b58bc9", "#0b3540", "#d9a441"]
+INK = "#1f1e1d"
+COLORS = ["#f05023", "#1ab06c", "#3b6fd9", "#f2a33a", "#7a5cfa", "#6b6a65", "#c23a2b", "#0f8a72"]
 matplotlib.rcParams.update(
     {
         "font.family": "Sarabun",
@@ -28,7 +28,7 @@ matplotlib.rcParams.update(
         "axes.spines.right": False,
         "axes.titleweight": "bold",
         "axes.titlesize": 14,
-        "axes.titlecolor": TEAL,
+        "axes.titlecolor": INK,
     }
 )
 

@@ -32,8 +32,8 @@ CSS = """
   }
 }
 body { font-family: "Sarabun", "Noto Sans Thai", sans-serif; font-size: 12pt; line-height: 1.5; color: #1a1a1a; }
-h1, h2, h3, h4 { color: #145e6e; line-height: 1.3; margin: 1.2em 0 0.5em; }
-h1 { font-size: 16pt; border-bottom: 2px solid #145e6e; padding-bottom: 0.2em; }
+h1, h2, h3, h4 { color: #1f1e1d; line-height: 1.3; margin: 1.2em 0 0.5em; }
+h1 { font-size: 16pt; border-bottom: 2px solid #f05023; padding-bottom: 0.2em; }
 h2 { font-size: 14pt; }
 h3 { font-size: 13pt; }
 p, li, td, th, blockquote { overflow-wrap: anywhere; }
@@ -44,7 +44,7 @@ tr { page-break-inside: avoid; }
 code { font-family: "Noto Sans Mono", monospace; font-size: 9.5pt; background: #f2f2f2; padding: 0 3px; }
 pre { background: #f2f2f2; padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
 pre code { padding: 0; }
-blockquote { border-left: 3px solid #145e6e; margin: 0.8em 0; padding: 0.2em 1em; color: #444; }
+blockquote { border-left: 3px solid #f05023; margin: 0.8em 0; padding: 0.2em 1em; color: #444; }
 hr { border: 0; border-top: 1px solid #ccc; }
 img { max-width: 100%%; }
 """

@@ -1,23 +1,23 @@
 # Word templates that become tools of their own (mounted at /app/config in office-docs).
-# Placeholders live in office/templates/cmubs_memo.docx, built by office/build-templates.py.
+# Placeholders live in office/templates/thai_memo.docx, built by office/build-templates.py.
 templates:
-  - name: cmubs_memo
+  - name: thai_memo
     description: >-
-      Create an official Thai internal memo (บันทึกข้อความ) of CMU Business School in the
-      standard government memo layout. Use it whenever the user asks for บันทึกข้อความ,
+      Create an official Thai internal memo (บันทึกข้อความ) in the standard government memo
+      layout. Use it whenever the user asks for บันทึกข้อความ,
       หนังสือภายใน or an internal memo. Write every field in Thai unless the user asks
       otherwise. Pass file_name in English (letters, digits, hyphens, underscores).
-    docx_path: cmubs_memo.docx
+    docx_path: thai_memo.docx
     annotations:
-      title: CMUBS Memo (บันทึกข้อความ)
+      title: Thai Memo (บันทึกข้อความ)
     args:
       - name: department
         type: string
-        description: ส่วนงานเจ้าของเรื่อง พร้อมโทรศัพท์ถ้ามี เช่น "งานบริการการศึกษา คณะบริหารธุรกิจ โทร. 0 5394 2100"
+        description: ส่วนงานเจ้าของเรื่อง พร้อมโทรศัพท์ถ้ามี เช่น "ฝ่ายบุคคล โทร. 0 2123 4567"
         required: true
       - name: doc_number
         type: string
-        description: เลขที่หนังสือ เช่น "อว 8393(3)/123" ถ้าไม่ทราบให้เว้นว่าง
+        description: เลขที่หนังสือ เช่น "บค 123/2569" ถ้าไม่ทราบให้เว้นว่าง
         required: false
         default: ""
       - name: date
@@ -30,7 +30,7 @@ templates:
         required: true
       - name: to
         type: string
-        description: เรียนใคร เช่น "คณบดีคณะบริหารธุรกิจ"
+        description: เรียนใคร เช่น "ผู้อำนวยการ"
         required: true
       - name: body
         type: string
