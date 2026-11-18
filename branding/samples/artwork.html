@@ -1,0 +1,113 @@
+<!doctype html>
+<!--
+  Source of the sample image shown in the login page's chat examples (samples/artwork.webp):
+  a 900x1200 portrait landscape — misty mountain ridges at dawn, a low sun, birds and pines —
+  the kind of picture someone would ask for to use on a report cover. No text, so one image
+  serves every language. Ridges are generated from a fixed seed, so the picture is the same
+  on every render. Rendered by branding/build-samples.js — edit this file, then run it.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 900px; height: 1200px; background: #000; }
+  #art { display: block; width: 900px; height: 1200px; }
+</style>
+</head>
+<body>
+<svg id="art" viewBox="0 0 900 1200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2a4a"/>
+      <stop offset=".32" stop-color="#4a5b86"/>
+      <stop offset=".55" stop-color="#c9a3a6"/>
+      <stop offset=".7" stop-color="#f6c08f"/>
+      <stop offset=".8" stop-color="#ffd9a8"/>
+    </linearGradient>
+    <radialGradient id="sun" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff3d6"/>
+      <stop offset=".35" stop-color="#ffd28a" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#ff9a5c" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+  </defs>
+  <rect width="900" height="1200" fill="url(#sky)"/>
+  <circle cx="560" cy="640" r="260" fill="url(#sun)"/>
+  <circle cx="560" cy="640" r="46" fill="#fff6e2"/>
+  <g id="layers"></g>
+  <g id="birds" fill="none" stroke="#2a2433" stroke-width="3" stroke-linecap="round" opacity=".75"></g>
+  <rect width="900" height="1200" filter="url(#grain)" opacity=".12" style="mix-blend-mode:overlay"/>
+</svg>
+<script>
+  /* Small seeded random so every render draws the same ridges. */
+  let seed = 20261118;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+
+  /* A natural ridge line: midpoint displacement (a coarse random profile refined with
+     shrinking random offsets), giving uneven peaks, shoulders and saddles. */
+  function ridge(base, amp, rough) {
+    const N = 256;
+    const h = new Array(N + 1).fill(0);
+    h[0] = rnd(); h[N] = rnd();
+    for (let step = N, scale = 1; step > 1; step /= 2, scale *= rough) {
+      for (let i = step / 2; i < N; i += step) {
+        h[i] = (h[i - step / 2] + h[i + step / 2]) / 2 + (rnd() - 0.5) * scale;
+      }
+    }
+    const min = Math.min(...h), max = Math.max(...h);
+    let d = 'M -10 1220';
+    h.forEach((v, i) => {
+      const x = -10 + (i / N) * 920;
+      const y = base - ((v - min) / (max - min)) * amp;
+      d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+    });
+    return d + ' L 910 1220 Z';
+  }
+
+  /* Far to near: each ridge darker; a soft band of mist rises from the valley in front of it. */
+  const ridges = [
+    { base: 760, amp: 230, rough: 0.58, fill: '#b9a8ba' },
+    { base: 820, amp: 210, rough: 0.56, fill: '#9286a3' },
+    { base: 890, amp: 200, rough: 0.55, fill: '#6c6385' },
+    { base: 970, amp: 190, rough: 0.54, fill: '#4a4365' },
+    { base: 1060, amp: 170, rough: 0.52, fill: '#2e2a45' },
+    { base: 1150, amp: 140, rough: 0.5, fill: '#1a1729' },
+  ];
+  const g = document.getElementById('layers');
+  g.insertAdjacentHTML('beforeend', `<linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff4ea" stop-opacity="0"/><stop offset=".55" stop-color="#fff4ea" stop-opacity="1"/>
+      <stop offset="1" stop-color="#fff4ea" stop-opacity="0"/></linearGradient>`);
+  ridges.forEach((r, i) => {
+    g.insertAdjacentHTML('beforeend', `<path d="${ridge(r.base, r.amp, r.rough)}" fill="${r.fill}"/>`);
+    if (i < ridges.length - 1) {
+      g.insertAdjacentHTML('beforeend',
+        `<rect x="-20" y="${r.base - 70}" width="940" height="130" fill="url(#mist)" opacity="${0.6 - i * 0.09}" filter="url(#soft)"/>`);
+    }
+  });
+
+  /* Pines on the nearest ridge. */
+  const pine = (x, y, h) => {
+    const w = h * 0.34;
+    let d = '';
+    for (let k = 0; k < 4; k++) {
+      const top = y - h + k * h * 0.2;
+      const bw = w * (0.45 + k * 0.2);
+      d += `M ${x} ${top} L ${x - bw} ${top + h * 0.34} L ${x + bw} ${top + h * 0.34} Z `;
+    }
+    d += `M ${x - 3} ${y - h * 0.1} h 6 v ${h * 0.12} h -6 Z`;
+    return `<path d="${d}" fill="#120f1d"/>`;
+  };
+  [[70, 1130, 150], [135, 1150, 110], [780, 1120, 170], [840, 1150, 120], [700, 1160, 90]].forEach(([x, y, h]) =>
+    g.insertAdjacentHTML('beforeend', pine(x, y, h)));
+
+  /* A few birds crossing the sun. */
+  const birds = document.getElementById('birds');
+  [[430, 520, 1], [470, 500, 0.8], [500, 540, 0.7], [395, 560, 0.6], [520, 478, 0.55]].forEach(([x, y, s]) =>
+    birds.insertAdjacentHTML('beforeend',
+      `<path d="M ${x - 16 * s} ${y} q ${8 * s} ${-9 * s} ${16 * s} 0 q ${8 * s} ${-9 * s} ${16 * s} 0" stroke-width="${3 * s}"/>`));
+</script>
+</body>
+</html>

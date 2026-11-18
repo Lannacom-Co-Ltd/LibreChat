@@ -11,7 +11,7 @@ by `docker-compose.override.yml`.
 
 | Screen | Layout |
 | --- | --- |
-| 960px wide and up | Left half: the mark, the headline "Start with a *thought*." and a sample chat that switches to a random example every 6 seconds (slides, a spreadsheet, a memo, a chart, a PDF summary, a reply to an email), written in the interface language. Right half: LibreChat's sign-in form, restyled |
+| 960px wide and up | Left half: the mark, the headline "Start with a *thought*." and a sample chat that switches to a random example every 6 seconds (slides, a spreadsheet, a memo, a chart, a PDF summary, an image, a reply to an email), written in the interface language. Right half: LibreChat's sign-in form, restyled |
 | Narrower | One centred column, as on Linear / ChatGPT: the mark, "Sign in to Lannacom AI Hub" (Thai: "เข้าสู่ระบบ Lannacom AI Hub"), the SSO button, OR, then the email form; buttons look the same as on wide screens |
 
 With `ALLOW_EMAIL_LOGIN=false` the SSO button takes the primary (filled) style. The privacy
@@ -43,6 +43,7 @@ everything else); the form's own text comes from LibreChat's translations.
 | `fonts/fraunces*.woff2`, `fonts/plex-thai-*.woff2`, `fonts/OFL-*.txt` | Fraunces (login headings, Latin) and IBM Plex Sans Thai. Text uses LibreChat's own Inter; Plex Thai is added to the Inter family for Thai characters only, so Thai looks the same on every device, on the login page and inside the app. SIL Open Font License |
 | `build-space-css.js` | Builds `space.css` and `greeting.js`; colours, sizes and greetings live here |
 | `login.js` | The login page's left panel: headline and sample chats in English and Thai (`TEXT`); plainer Thai for LibreChat's own login wording, e.g. "เข้าสู่ระบบ" for "ดำเนินการต่อ" (`THAI_WORDING`) |
+| `samples/artwork.html`, `build-samples.js`, `samples/artwork.webp` | The sample generated image in the login page's chat examples (a portrait landscape of misty mountains at dawn, no text): edit the HTML, run `node branding/build-samples.js` (needs Chrome), bump `login.js?v=` |
 | `admin/manifest.json` | Admin panel name and icon |
 | `space.css`, `greeting.js`, `icons/` | Generated — do not edit by hand |
 

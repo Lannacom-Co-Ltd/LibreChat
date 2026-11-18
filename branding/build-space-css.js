@@ -619,7 +619,7 @@ ${PANEL} .ah-thread {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 178px;
+  min-height: 236px;
   transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
@@ -756,6 +756,27 @@ ${PANEL} .ah-quote {
   border-left: 2px solid #1ab06c;
   border-radius: 0 10px 10px 0;
   background: var(--ah-field);
+}
+
+/* Image example: a sample portrait image (samples/artwork.webp) with its size underneath. */
+${PANEL} .ah-image {
+  margin-top: 12px;
+}
+
+${PANEL} .ah-image img {
+  display: block;
+  width: 90px;
+  height: 120px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.5);
+}
+
+${PANEL} .ah-image > span {
+  display: block;
+  margin-top: 6px;
+  color: var(--ah-muted);
+  font-size: 11.5px;
 }
 
 ${PANEL} .ah-ask {
