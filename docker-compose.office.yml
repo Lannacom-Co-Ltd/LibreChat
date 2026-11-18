@@ -2,7 +2,7 @@
 #  Office files MCP (Word / Excel / PowerPoint / PDF / text) — Lannacom
 #  แยกเป็น compose project ของตัวเอง ไม่แตะ compose ของ LibreChat เข้า network ของมัน (LIBRECHAT_NETWORK)
 #  ขั้นตอนติดตั้งบน server ใหม่: DEPLOY.md
-#  รันด้วย: sudo docker compose -p cmu-office -f docker-compose.office.yml --env-file office.env up -d
+#  รันด้วย: sudo docker compose -p aihub-office -f docker-compose.office.yml --env-file office.env up -d
 #
 #  LibreChat เรียก http://office-docs:8959/mcp (mcpServers.office-files ใน librechat.yaml)
 #    office-files (office/files) PDF, ไฟล์ข้อความ, กราฟ, แผนภาพ และส่งต่อ Word/Excel/PowerPoint ไปที่ office-docs
@@ -16,7 +16,7 @@
 services:
   office-net:
     image: registry.k8s.io/pause:3.10
-    container_name: cmu-office-net
+    container_name: aihub-office-net
     restart: always
     networks:
       default:
@@ -26,8 +26,8 @@ services:
     build:
       context: ./office
       dockerfile: files/Dockerfile
-    image: cmubs/office-files:latest
-    container_name: cmu-office-files
+    image: aihub/office-files:latest
+    container_name: aihub-office-files
     restart: always
     network_mode: service:office-net
     depends_on: [office-net, office-storage]
@@ -65,7 +65,7 @@ services:
 
   office-docs:
     image: georgx22/mcp-office-docs@sha256:9c26e1944104ed01d870abae94665e4e5398ee74d50d33c33ba4622db534b38a
-    container_name: cmu-office-docs
+    container_name: aihub-office-docs
     restart: always
     network_mode: service:office-net
     depends_on: [office-net]
@@ -90,7 +90,7 @@ services:
 
   office-storage:
     image: rustfs/rustfs:1.0.1
-    container_name: cmu-office-storage
+    container_name: aihub-office-storage
     restart: always
     network_mode: service:office-net
     depends_on: [office-net]
@@ -108,7 +108,7 @@ services:
 networks:
   default:
     # The network of the LibreChat compose project: <project name>_default (docker network ls).
-    name: ${LIBRECHAT_NETWORK:-cmu_default}
+    name: ${LIBRECHAT_NETWORK:-aihub_default}
     external: true
 
 volumes:

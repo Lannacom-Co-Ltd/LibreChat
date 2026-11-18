@@ -24,8 +24,8 @@ LibreChat ──MCP──▶ office-docs:8959 (office-files) ──┬── PDF
 
 | ส่วน | ไฟล์ / ที่มา | compose project |
 |---|---|---|
-| LibreChat, MongoDB, Meilisearch, RAG | `docker-compose.yml` (upstream) + `docker-compose.override.yml` (ของเรา) + ไฟล์ proxy/HTTPS ของ server | ของ LibreChat เช่น `cmu` |
-| Office Files 4 container | `docker-compose.office.yml` + `office.env` | `cmu-office` แยกต่างหาก |
+| LibreChat, MongoDB, Meilisearch, RAG | `docker-compose.yml` (upstream) + `docker-compose.override.yml` (ของเรา) + ไฟล์ proxy/HTTPS ของ server | ของ LibreChat เช่น `aihub` |
+| Office Files 4 container | `docker-compose.office.yml` + `office.env` | `aihub-office` แยกต่างหาก |
 
 `office-net` เป็น container เปล่าที่ถือ network ให้ `office-files`, `office-docs`, `office-storage` ใช้ร่วมกัน
 ชื่อ `office-docs` บน network ของ LibreChat จึงชี้ไปที่ทั้งชุด (พอร์ต 8958, 8959, 9000)
@@ -202,7 +202,7 @@ grep '^OFFICE_DOCS_API_KEY=' office.env >> .env
 ถ้าแก้บน server เอง ต้อง recreate ทั้ง office-files และ api ของ LibreChat (LibreChat อ่านรายการเครื่องมือครั้งเดียวตอนเริ่ม):
 
 ```bash
-sudo docker compose -p cmu-office -f docker-compose.office.yml --env-file office.env up -d --force-recreate office-files
+sudo docker compose -p aihub-office -f docker-compose.office.yml --env-file office.env up -d --force-recreate office-files
 $COMPOSE up -d --force-recreate api
 ```
 
@@ -284,7 +284,7 @@ COMPOSE="sudo docker compose -p <ชื่อ project> -f docker-compose.yml -f 
 
 $COMPOSE up -d                                 # 1. LibreChat + proxy
 sudo docker network ls                         # 2. ดูชื่อ network แล้วใส่ LIBRECHAT_NETWORK ใน office.env
-sudo docker compose -p cmu-office -f docker-compose.office.yml --env-file office.env up -d --build   # 3. Office Files
+sudo docker compose -p aihub-office -f docker-compose.office.yml --env-file office.env up -d --build   # 3. Office Files
 $COMPOSE up -d --force-recreate api            # 4. ให้ LibreChat เชื่อม MCP ที่เพิ่งเปิด
 ```
 
@@ -326,7 +326,7 @@ $COMPOSE up -d --force-recreate api            # 4. ให้ LibreChat เช�
 git pull
 node branding/build-space-css.js        # ถ้าแก้ CSS แล้วยังไม่ได้ build ใน commit
 $COMPOSE up -d --force-recreate api
-sudo docker compose -p cmu-office -f docker-compose.office.yml --env-file office.env up -d --build
+sudo docker compose -p aihub-office -f docker-compose.office.yml --env-file office.env up -d --build
 ```
 
 **สำรองข้อมูล** — สิ่งที่ต้องสำรองคือ `data-node/` (MongoDB: ผู้ใช้, แชท), `uploads/`, `images/`, `.env`, `office.env`,

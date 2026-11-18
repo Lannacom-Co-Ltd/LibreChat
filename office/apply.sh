@@ -13,7 +13,7 @@
 #   OFFICE_REMOTE_KEY=~/.ssh/<key>.pem
 #   OFFICE_REMOTE_DIR=/opt/librechat/<name>
 #   OFFICE_REMOTE_COMPOSE=-p <project> -f docker-compose.yml -f docker-compose.override.yml -f <proxy>.yml
-#   OFFICE_REMOTE_PROJECT=cmu-office        (compose project of Office Files, default cmu-office)
+#   OFFICE_REMOTE_PROJECT=aihub-office        (compose project of Office Files, default aihub-office)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -32,7 +32,7 @@ KEY="${KEY/#\~/$HOME}"
 DIR="$(setting OFFICE_REMOTE_DIR)"
 LIBRECHAT="$(setting OFFICE_REMOTE_COMPOSE)"
 PROJECT="$(setting OFFICE_REMOTE_PROJECT)"
-PROJECT="${PROJECT:-cmu-office}"
+PROJECT="${PROJECT:-aihub-office}"
 [ -n "$REMOTE" ] && [ -n "$KEY" ] && [ -n "$DIR" ] && [ -n "$LIBRECHAT" ] \
   || fail "set OFFICE_REMOTE, OFFICE_REMOTE_KEY, OFFICE_REMOTE_DIR and OFFICE_REMOTE_COMPOSE in office.env"
 [ -f "$KEY" ] || fail "SSH key not found: $KEY"
