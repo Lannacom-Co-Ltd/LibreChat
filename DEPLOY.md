@@ -229,6 +229,17 @@ grep '^OFFICE_DOCS_API_KEY=' office.env >> .env
 **เครื่องมือผู้ดูแล** — `OFFICE_MONGO_URI=mongodb://mongodb:27017/LibreChat` (อ่านรายงาน เขียนเฉพาะยอดเครดิต) และต้องมี entry
 `office-admin` ใน `librechat.yaml` (ข้อ 5) ผู้ใช้ที่ role ไม่ใช่ `ADMIN` เรียกแล้วจะถูกปฏิเสธ
 
+**หน้าดูบันทึกระบบ (`https://<โดเมน>/aihub-logs/`)** — ผู้ดูแล (role `ADMIN`) เปิดดู Error/Debug log ของ LibreChat
+ย้อนหลัง 14 วันในเบราว์เซอร์ได้เอง กรองระดับ ค้นคำ ดาวน์โหลด (อ่านอย่างเดียว ข้อความแชทใน log ถูกซ่อน) ใช้ login เดิมของ AI Hub
+ค่าเริ่มต้นปิด ต้องทำ 2 อย่าง: `OFFICE_LOGS=on` ใน `office.env` (โฟลเดอร์ log ของ LibreChat = `./logs` ข้าง compose
+เปลี่ยนได้ด้วย `LIBRECHAT_LOGS_DIR`) แล้ว recreate office-files, และเพิ่ม route ใน reverse proxy ก่อนบล็อก catch-all (ข้อ 7):
+
+```caddyfile
+    handle /aihub-logs/* {
+        reverse_proxy office-docs:8959
+    }
+```
+
 **วิธีที่ง่ายที่สุด (จากเครื่องตัวเอง):** แก้ค่า on/off ใน `office.env` ในเครื่อง แล้วรัน `./office/apply.sh` จากโฟลเดอร์ repo
 (Git Bash บน Windows ได้) สคริปต์ตรวจตัวสะกด ส่งเฉพาะบรรทัด on/off ขึ้น server (สำรองไฟล์เดิม ไม่แตะรหัสผ่าน)
 รีสตาร์ตให้ และแสดงผล ถ้าไม่มีอะไรเปลี่ยนจะไม่รีสตาร์ต ต้องใส่ที่อยู่ server ใน `office.env` ในเครื่องก่อน

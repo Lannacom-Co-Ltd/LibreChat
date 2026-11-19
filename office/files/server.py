@@ -17,6 +17,7 @@ Every file passes a quality gate before its link reaches the model:
   and a text-only model (DeepSeek, for one) makes the provider reject the whole request.
 """
 
+import asyncio
 import base64
 import csv
 import hmac
@@ -25,8 +26,10 @@ import json
 import os
 import re
 import threading
+from datetime import datetime, timezone
 from typing import Literal
 
+import httpx
 import uvicorn
 from fastmcp import FastMCP
 from fastmcp.client.transports import StreamableHttpTransport
@@ -39,14 +42,16 @@ from mcp.types import ImageContent, TextContent
 from PIL import Image
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
+from starlette.responses import FileResponse, JSONResponse, PlainTextResponse
 
 import admin
 import features
 import images
+import logs
 import names
 import schemas
 import storage
+import usage
 from checks import CHECKS
 from charts import Series, draw_chart
 from diagrams import DiagramEdge, DiagramNode, TimelineEvent, draw_diagram
@@ -531,6 +536,222 @@ class BearerAuth(BaseHTTPMiddleware):
             return JSONResponse({"error": "unauthorized"}, status_code=401)
         return await call_next(request)
 
+
+LOGS_DIR = os.environ.get("LOGS_DIR", "/librechat-logs")
+LIBRECHAT_API_URL = os.environ.get("LIBRECHAT_API_URL", "http://api:3080")
+LOGS_PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs.html")
+LOG_LEVELS = set(logs.LEVELS) | {"login"}
+
+
+async def librechat_user(url: str, token: str) -> tuple[int, dict]:
+    async with httpx.AsyncClient(timeout=10) as client:
+        response = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+    try:
+        return response.status_code, response.json()
+    except ValueError:
+        return response.status_code, {}
+
+
+def log_error(status: int, code: str) -> JSONResponse:
+    return JSONResponse({"error": code}, status_code=status, headers={"Cache-Control": "no-store"})
+
+
+async def logs_admin(request) -> tuple[dict | None, JSONResponse | None]:
+    header = request.headers.get("authorization", "")
+    token = header[7:] if header.lower().startswith("bearer ") else ""
+    try:
+        return await logs.admin_user(token, librechat_user, LIBRECHAT_API_URL), None
+    except logs.Unauthorized:
+        return None, log_error(401, "signin")
+    except logs.Forbidden:
+        return None, log_error(403, "admin")
+    except logs.Unavailable as err:
+        print(f"log page: cannot ask LibreChat who is signed in: {err}", flush=True)
+        return None, log_error(503, "unavailable")
+
+
+USAGE_PAGE_SIZE = 50
+
+
+def emails_of(db, ids) -> dict:
+    ids = [i for i in ids if i]
+    return {str(u["_id"]): u.get("email", "") for u in db.users.find({"_id": {"$in": ids}}, {"email": 1})} if ids else {}
+
+
+def usage_page(range_name: str, text: str, page: int, group: str | None) -> dict:
+    """One page of the AI usage log (usage.py) from LibreChat's database: calls, or their sums
+    per user or per model."""
+    since = usage.window(range_name)
+    db = admin.db()
+    user_ids = []
+    if text:
+        found = db.users.find({"email": {"$regex": re.escape(text), "$options": "i"}}, {"_id": 1}).limit(500)
+        user_ids = [u["_id"] for u in found]
+    stages = usage.pipeline(since, datetime.now(timezone.utc), user_ids, text, page, USAGE_PAGE_SIZE, group)
+    result = next(iter(db.transactions.aggregate(stages, allowDiskUse=True)), {"rows": [], "totals": [], "count": []})
+    totals = usage.summary(result["totals"])
+    count = (result.get("count") or [{}])[0].get("n", 0)
+    if group:
+        emails = emails_of(db, [doc["_id"] for doc in result["rows"]]) if group == "user" else {}
+        rows = [usage.group_row(doc, group, emails) for doc in result["rows"]]
+    else:
+        emails = emails_of(db, {doc["_id"].get("user") for doc in result["rows"]})
+        rows = [usage.row(doc, emails) for doc in result["rows"]]
+    return {
+        "rows": rows,
+        "summary": totals,
+        "total": count,
+        "page": max(1, page),
+        "pages": max(1, -(-count // USAGE_PAGE_SIZE)),
+    }
+
+
+def credits_page(text: str, page: int) -> dict:
+    """Every user's credit balance (usage.py), lowest first."""
+    result = next(iter(admin.db().balances.aggregate(usage.credits_pipeline(text, page, USAGE_PAGE_SIZE))),
+                  {"rows": [], "totals": []})
+    totals = usage.credit_summary(result["totals"])
+    return {
+        "rows": [usage.credit_row(doc) for doc in result["rows"]],
+        "summary": totals,
+        "total": totals["users"],
+        "page": max(1, page),
+        "pages": max(1, -(-totals["users"] // USAGE_PAGE_SIZE)),
+    }
+
+
+def logs_routes() -> None:
+    """The administrators' log page, only when OFFICE_LOGS=on (features.py)."""
+
+    @mcp.custom_route("/aihub-logs/", methods=["GET"])
+    async def logs_page(request):
+        # Shown inside the chat page (branding/admin.js) on the same site only.
+        return FileResponse(
+            LOGS_PAGE,
+            headers={
+                "Cache-Control": "no-store",
+                "X-Frame-Options": "SAMEORIGIN",
+                "Content-Security-Policy": "frame-ancestors 'self'",
+            },
+        )
+
+    @mcp.custom_route("/aihub-logs/api/files", methods=["GET"])
+    async def logs_files(request):
+        user, refused = await logs_admin(request)
+        if refused:
+            return refused
+        return JSONResponse(
+            {"files": logs.list_files(LOGS_DIR), "user": user.get("email") or user.get("username", "")},
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @mcp.custom_route("/aihub-logs/api/days", methods=["GET"])
+    async def logs_days(request):
+        user, refused = await logs_admin(request)
+        if refused:
+            return refused
+        return JSONResponse(
+            {"days": logs.days(LOGS_DIR), "user": user.get("email") or user.get("username", "")},
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @mcp.custom_route("/aihub-logs/api/usage", methods=["GET"])
+    async def logs_usage(request):
+        user, refused = await logs_admin(request)
+        if refused:
+            return refused
+        if not admin.MONGO_URI:
+            return log_error(503, "nodb")
+        query = request.query_params
+        group = query.get("group") or None
+        try:
+            data = await asyncio.to_thread(
+                usage_page, query.get("range", "24h"), query.get("q", "").strip()[:100], int(query.get("page", 1)), group
+            )
+        except ValueError:
+            return log_error(400, "range")
+        print(f"log page: {user.get('email', user.get('_id'))} viewed AI usage ({query.get('range', '24h')})", flush=True)
+        return JSONResponse(data, headers={"Cache-Control": "no-store"})
+
+    @mcp.custom_route("/aihub-logs/api/credits", methods=["GET"])
+    async def logs_credits(request):
+        user, refused = await logs_admin(request)
+        if refused:
+            return refused
+        if not admin.MONGO_URI:
+            return log_error(503, "nodb")
+        query = request.query_params
+        try:
+            data = await asyncio.to_thread(credits_page, query.get("q", "").strip()[:100], int(query.get("page", 1)))
+        except ValueError:
+            return log_error(400, "paging")
+        print(f"log page: {user.get('email', user.get('_id'))} viewed user credits", flush=True)
+        return JSONResponse(data, headers={"Cache-Control": "no-store"})
+
+    @mcp.custom_route("/aihub-logs/api/credits", methods=["POST"])
+    async def logs_credits_change(request):
+        """Top up (add) or set one user's credits; the same change manage_credits makes."""
+        user, refused = await logs_admin(request)
+        if refused:
+            return refused
+        if not admin.MONGO_URI:
+            return log_error(503, "nodb")
+        try:
+            body = await request.json()
+            action = body.get("action")
+            email = str(body.get("email", "")).strip()
+            credits = body.get("credits")
+            if action not in ("add", "set") or not email or not isinstance(credits, int) or isinstance(credits, bool):
+                raise ValueError("action (add or set), email and a whole number of credits are needed")
+            admin_id = str(user.get("id") or user.get("_id") or user.get("email") or "unknown")
+            text = await asyncio.to_thread(admin.change_credits, action, email, credits, admin_id)
+        except ValueError as err:
+            return JSONResponse({"error": "invalid", "message": str(err)}, status_code=400, headers={"Cache-Control": "no-store"})
+        print(f"log page: {user.get('email', admin_id)} {action} credits for {email}", flush=True)
+        return JSONResponse({"message": text}, headers={"Cache-Control": "no-store"})
+
+    @mcp.custom_route("/aihub-logs/api/entries", methods=["GET"])
+    async def logs_entries(request):
+        user, refused = await logs_admin(request)
+        if refused:
+            return refused
+        query = request.query_params
+        name = query.get("file", "")
+        levels = {level for level in query.get("levels", "").split(",") if level in LOG_LEVELS} or None
+        try:
+            entries = logs.read_entries(LOGS_DIR, name)
+            page = logs.select(entries, levels, query.get("q", "")[:200], int(query.get("page", 1)), int(query.get("size", 100)))
+        except logs.NotAllowed:
+            return log_error(400, "name")
+        except FileNotFoundError:
+            return log_error(404, "missing")
+        except ValueError:
+            return log_error(400, "paging")
+        print(f"log page: {user.get('email', user.get('_id'))} viewed {name}", flush=True)
+        return JSONResponse(page, headers={"Cache-Control": "no-store"})
+
+    @mcp.custom_route("/aihub-logs/api/download", methods=["GET"])
+    async def logs_download(request):
+        user, refused = await logs_admin(request)
+        if refused:
+            return refused
+        name = request.query_params.get("file", "")
+        try:
+            text = logs.redacted_file(LOGS_DIR, name)
+        except logs.NotAllowed:
+            return log_error(400, "name")
+        except FileNotFoundError:
+            return log_error(404, "missing")
+        print(f"log page: {user.get('email', user.get('_id'))} downloaded {name}", flush=True)
+        download = re.sub(r"\.gz$", "", name)
+        return PlainTextResponse(
+            text,
+            headers={"Content-Disposition": f'attachment; filename="{download}"', "Cache-Control": "no-store"},
+        )
+
+
+if features.LOGS_PAGE:
+    logs_routes()
 
 app = mcp.http_app(path="/mcp", middleware=[Middleware(BearerAuth)])
 

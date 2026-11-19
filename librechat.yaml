@@ -38,3 +38,28 @@ interface:
 #         version: "<api-version from the Foundry portal>"
 #         models:
 #           <model name>: true
+
+# ---------------------------------------------------------------------------
+# File creation (Word / Excel / PowerPoint / PDF / text) via the office-docs services in
+# docker-compose.override.yml. They are inside the Docker network, which LibreChat blocks
+# for MCP by default, hence the allowedAddresses exemption.
+# ---------------------------------------------------------------------------
+# Hidden on this dev machine for now (Office Files containers are not running): remove the "# " below to bring it back.
+# mcpSettings:
+#   allowedAddresses:
+#     - 'office-docs:8959'
+# 
+# # One entry for every file type: office/pdf/server.py serves PDF and text files itself and
+# # passes Word, Excel, PowerPoint and memo calls on to the office-docs server behind it.
+# mcpServers:
+#   office-files:
+#     type: streamable-http
+#     url: http://office-docs:8959/mcp
+#     title: 'Office Files'
+#     description: 'Create downloadable files'
+#     headers:
+#       Authorization: 'Bearer ${OFFICE_DOCS_API_KEY}'
+#     timeout: 120000
+#     serverInstructions: true
+#     startup: true
+#     chatMenu: true

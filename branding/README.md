@@ -44,6 +44,7 @@ everything else); the form's own text comes from LibreChat's translations.
 | `build-space-css.js` | Builds `space.css` and `greeting.js`; colours, sizes and greetings live here |
 | `login.js` | The login page's left panel: headline and sample chats in English and Thai (`TEXT`); plainer Thai for LibreChat's own login wording, e.g. "เข้าสู่ระบบ" for "ดำเนินการต่อ" (`THAI_WORDING`) |
 | `samples/*.html`, `build-samples.js`, `samples/*.webp` | The sample images in the login page's chat examples: `artwork` (portrait, misty mountains at dawn, no text) and `poster` (landscape launch poster, English and Thai): edit the HTML, run `node branding/build-samples.js` (needs Chrome), bump `login.js?v=` |
+| `admin.js` | "System logs" icon in the chat's left rail, for role ADMIN only; opens `/aihub-logs/` (Office Files log page). Bump `admin.js?v=` in the override after editing |
 | `admin/manifest.json` | Admin panel name and icon |
 | `space.css`, `greeting.js`, `icons/` | Generated — do not edit by hand |
 

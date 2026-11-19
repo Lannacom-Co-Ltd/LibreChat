@@ -66,6 +66,12 @@ services:
       IMAGE_MODELS: ${OFFICE_IMAGE_MODELS:-}
       # Administrator tools (usage_report, manage_credits): off until LibreChat's database is set.
       MONGO_URI: ${OFFICE_MONGO_URI:-}
+      # Administrators' log page /aihub-logs/ (office/files/logs.py): off unless OFFICE_LOGS=on, and it
+      # also needs a reverse-proxy route for /aihub-logs/* to office-docs:8959 (see DEPLOY.md).
+      OFFICE_LOGS: ${OFFICE_LOGS:-off}
+      LIBRECHAT_API_URL: ${OFFICE_LIBRECHAT_API_URL:-http://api:3080}
+    volumes:
+      - ${LIBRECHAT_LOGS_DIR:-./logs}:/librechat-logs:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8959), 3)"]
       interval: 30s

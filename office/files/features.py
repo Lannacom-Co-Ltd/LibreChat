@@ -41,6 +41,10 @@ FEATURES = {
 # Tools for administrators only; not file kinds, so not named in the instructions.
 ADMIN_FEATURES = {"OFFICE_ADMIN": {"usage_report", "manage_credits"}}
 
+# The administrators' log page (/aihub-logs/, logs.py) is off unless OFFICE_LOGS=on: it also
+# needs LibreChat's logs folder mounted and a reverse-proxy route, so it is opted into per server.
+LOGS_PAGE = os.environ.get("OFFICE_LOGS", "off").strip().lower() not in OFF
+
 # These need a key or a database as well as their switch.
 NEEDS = {"OFFICE_IMAGE": "IMAGE_API_KEY", "OFFICE_ADMIN": "MONGO_URI"}
 
