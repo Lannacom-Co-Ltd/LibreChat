@@ -44,6 +44,8 @@ from starlette.responses import JSONResponse
 import admin
 import features
 import images
+import names
+import schemas
 import storage
 from checks import CHECKS
 from charts import Series, draw_chart
@@ -370,6 +372,8 @@ def adopt(url: str, arguments: dict) -> tuple[str, list, list]:
     data, content_type = storage.read(key)
     base = key.rsplit("/", 1)[-1]
     stem, _, extension = OLD_PREFIX.sub("", base).rpartition(".")
+    if not stem or names.is_random(stem):
+        stem = names.from_arguments(arguments, extension)
     notes, problems = [], []
     check = CHECKS.get(extension.lower())
     if check:
@@ -379,7 +383,7 @@ def adopt(url: str, arguments: dict) -> tuple[str, list, list]:
             )
         except Exception as err:  # a checker fault must never cost the user the file
             print(f"check of {base} failed: {err}", flush=True)
-    link = storage.store(data, stem or "document", extension, content_type)
+    link = storage.store(data, stem, extension, content_type)
     storage.remove(key)
     return link, notes, problems
 
@@ -490,7 +494,7 @@ class Switches(ToolMiddleware):
         tools = await call_next(context)
         admin_scope = get_http_headers(include_all=True).get("x-aihub-scope") == "admin"
         return [
-            tool
+            tool.model_copy(update={"parameters": schemas.slim(tool.name, tool.parameters)})
             for tool in tools
             if tool.name not in features.DISABLED_TOOLS and (tool.name in features.ADMIN_TOOLS) == admin_scope
         ]
