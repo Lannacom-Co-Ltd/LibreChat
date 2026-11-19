@@ -18,7 +18,8 @@ services:
       - ./branding/icons/apple-touch-icon-180x180.png:/app/client/dist/assets/apple-touch-icon-180x180.png:ro
       - ./branding/icons/icon-192x192.png:/app/client/dist/assets/icon-192x192.png:ro
       - ./branding/icons/maskable-icon.png:/app/client/dist/assets/maskable-icon.png:ro
-    # Adds the branding stylesheet, the random new-chat greeting picker (branding/greeting.js)
+    # Adds the branding stylesheet, the random new-chat greeting picker (branding/greeting.js),
+    # the administrators' "System logs" icon (branding/admin.js, role ADMIN only)
     # and the login page's left panel (branding/login.js) to index.html, sets the initial
     # tab title (APP_TITLE in .env takes over once the app loads) and versions the favicon
     # links, then starts LibreChat as the image normally does. Bump ?v= after editing
@@ -32,6 +33,8 @@ services:
         sed -i 's#href="assets/favicon-\([0-9x]*\)\.png"#href="assets/favicon-\1.png?v=4"#g' /app/client/dist/index.html;
         grep -q 'assets/custom/greeting.js' /app/client/dist/index.html ||
         sed -i 's#</head>#<script src="assets/custom/greeting.js?v=1"></script></head>#' /app/client/dist/index.html;
+        grep -q 'assets/custom/admin.js' /app/client/dist/index.html ||
+        sed -i 's#</head>#<script defer src="assets/custom/admin.js?v=4"></script></head>#' /app/client/dist/index.html;
         grep -q 'assets/custom/login.js' /app/client/dist/index.html ||
         sed -i 's#</head>#<script defer src="assets/custom/login.js?v=11"></script></head>#' /app/client/dist/index.html;
         grep -q 'assets/custom/space.css' /app/client/dist/index.html ||
