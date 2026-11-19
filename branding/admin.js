@@ -35,12 +35,81 @@
     "ring-offset-surface-primary transition-colors duration-theme-fast focus-visible:outline-none " +
     "focus-visible:ring-2 focus-visible:ring-text-primary focus-visible:ring-offset-2 hover:bg-surface-hover " +
     "hover:text-text-primary size-10 cursor-pointer h-9 w-9 rounded-lg text-text-secondary";
+  var TOOLTIP_ID = "aihub-admin-tooltip";
+  var tooltipEl = null;
+  var isAdmin = false;
   var STYLE =
     "#" + "aihub-admin-logs[aria-pressed=\"true\"]{background-color:rgb(var(--surface-active-alt));color:rgb(var(--text-primary));}" +
     "html.aihub-logs-open [data-testid^=\"nav-panel-\"][aria-pressed=\"true\"]," +
     "html.aihub-logs-open [data-testid^=\"nav-panel-\"][data-state=\"active\"]" +
-    "{background-color:transparent!important;color:rgb(var(--text-secondary))!important;}";
-  var isAdmin = false;
+    "{background-color:transparent!important;color:rgb(var(--text-secondary))!important;}" +
+    "#" + TOOLTIP_ID + "{position:fixed;z-index:150;pointer-events:none;transition:opacity 120ms ease,transform 120ms ease;opacity:0;transform:translateX(-6px);}" +
+    "#" + TOOLTIP_ID + ".show{opacity:1;transform:translateX(0);}" +
+    "#" + TOOLTIP_ID + " .tooltip{position:relative;display:flex;align-items:center;white-space:nowrap;padding:0.25rem 0.5rem;font-size:1rem;line-height:1.5rem;border-radius:0.275rem;background-color:rgb(var(--surface-primary));color:rgb(var(--text-primary));box-shadow:0 2px 4px rgba(0,0,0,0.25);}" +
+    "html.dark #" + TOOLTIP_ID + " .tooltip{box-shadow:0 1px 2px rgba(0,0,0,0.35);}" +
+    "html.high-contrast #" + TOOLTIP_ID + " .tooltip{border:1px solid rgb(var(--border-medium));box-shadow:none;}" +
+    "#" + TOOLTIP_ID + " .ah-arrow{position:absolute;width:16px;height:16px;top:50%;right:100%;transform:translateY(-50%);pointer-events:none;fill:rgb(var(--surface-primary));}";
+
+  function removeTooltip() {
+    if (tooltipEl) {
+      tooltipEl.remove();
+      tooltipEl = null;
+    }
+  }
+
+  function hideTooltip() {
+    if (tooltipEl) {
+      var el = tooltipEl;
+      tooltipEl = null;
+      el.classList.remove("show");
+      setTimeout(function () {
+        if (el.parentNode) el.remove();
+      }, 120);
+    }
+  }
+
+  function showTooltip(button) {
+    if (!button || !document.body.contains(button)) return;
+    removeTooltip();
+    var label = text().label;
+    var rect = button.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return;
+
+    var wrapper = document.createElement("div");
+    wrapper.id = TOOLTIP_ID;
+
+    var tip = document.createElement("div");
+    tip.className = "tooltip";
+    tip.setAttribute("role", "tooltip");
+
+    var arrow = document.createElement("div");
+    arrow.className = "ah-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.innerHTML =
+      '<svg display="block" viewBox="0 0 30 30" width="16" height="16">' +
+      '<g transform="rotate(-90 15 15)">' +
+      '<path stroke="none" d="M23 27.8C24.1 29 26.4 30 28 30H30H0H2C3.7 30 5.9 29 7 27.8L14 20.6C14.7 19.8 15.3 19.8 16 20.6L23 27.8Z"></path>' +
+      '</g></svg>';
+
+    tip.appendChild(arrow);
+    tip.appendChild(document.createTextNode(label));
+    wrapper.appendChild(tip);
+    document.body.appendChild(wrapper);
+    tooltipEl = wrapper;
+
+    var tipRect = tip.getBoundingClientRect();
+    var top = rect.top + (rect.height - tipRect.height) / 2;
+    var left = rect.right + 8;
+
+    wrapper.style.top = top + "px";
+    wrapper.style.left = left + "px";
+
+    requestAnimationFrame(function () {
+      if (tooltipEl === wrapper) {
+        wrapper.classList.add("show");
+      }
+    });
+  }
 
   function addStyle() {
     if (document.getElementById("aihub-admin-style") || !document.head) return;
@@ -73,6 +142,7 @@
   }
 
   function closePanel() {
+    hideTooltip();
     var open = panel();
     if (open) open.remove();
     document.documentElement.classList.remove("aihub-logs-open");
@@ -96,6 +166,7 @@
   }
 
   function openPanel() {
+    hideTooltip();
     if (panel()) return;
     var box = document.createElement("div");
     box.id = PANEL_ID;
@@ -126,6 +197,7 @@
     var existing = document.getElementById(BUTTON_ID);
     if (!isAdmin) {
       if (existing) existing.remove();
+      hideTooltip();
       closePanel();
       return;
     }
@@ -137,8 +209,8 @@
     if (existing && existing.previousElementSibling === anchor) {
       if (existing.getAttribute("aria-label") !== label) {
         existing.setAttribute("aria-label", label);
-        existing.title = label;
       }
+      existing.removeAttribute("title");
       return;
     }
     if (existing) existing.remove();
@@ -149,11 +221,20 @@
     button.className = BUTTON_CLASS;
     button.setAttribute("aria-label", label);
     button.setAttribute("aria-pressed", String(!!open));
-    button.title = label;
+    button.removeAttribute("title");
     button.innerHTML = ICON;
     button.addEventListener("click", function () {
+      hideTooltip();
       panel() ? closePanel() : openPanel();
     });
+    button.addEventListener("mouseenter", function () {
+      showTooltip(button);
+    });
+    button.addEventListener("mouseleave", hideTooltip);
+    button.addEventListener("focus", function () {
+      showTooltip(button);
+    });
+    button.addEventListener("blur", hideTooltip);
     anchor.insertAdjacentElement("afterend", button);
   }
 
@@ -203,7 +284,11 @@
     },
     true
   );
-  window.addEventListener("resize", place);
+  window.addEventListener("scroll", hideTooltip, true);
+  window.addEventListener("resize", function () {
+    hideTooltip();
+    place();
+  });
   window.addEventListener("popstate", closePanel);
 
   var pending = false;
