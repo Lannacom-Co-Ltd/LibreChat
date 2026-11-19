@@ -155,8 +155,8 @@ modelSpecs:
   office-admin:                        # รายงานการใช้งาน + จัดการเครดิต (เฉพาะ ADMIN) ผู้ดูแลเลือกจากเมนู MCP ในแชท
     type: streamable-http
     url: http://office-docs:8959/mcp
-    title: 'AI Hub Admin'
-    description: 'Usage report and token credits (administrators only)'
+    title: 'สำหรับผู้ดูแลระบบ - Admin only'   # ชื่อใช้ได้แค่ตัวอักษร ตัวเลข เว้นวรรค - และ ' (วงเล็บทำให้ LibreChat ไม่เปิด)
+    description: 'เครดิตและรายงานการใช้งาน - Credits & usage report'
     headers:
       Authorization: 'Bearer ${OFFICE_DOCS_API_KEY}'
       X-AIHub-Scope: 'admin'
